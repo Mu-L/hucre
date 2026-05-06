@@ -607,6 +607,16 @@ function buildPlotArea(chart: SheetChart, sheetName: string): string {
     // hardcoded 10pt default Excel itself emits on a fresh axis title.
     xAxisTitleFontSize: normalizeAxisTitleFontSize(chart.axes?.x?.axisTitleFontSize),
     yAxisTitleFontSize: normalizeAxisTitleFontSize(chart.axes?.y?.axisTitleFontSize),
+    // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr b=".."/></a:pPr>
+    // <a:r><a:rPr b=".."/></a:r></a:p></c:rich></c:tx></c:title>` also
+    // sits on every axis flavour. Normalize the caller's boolean
+    // input — non-boolean tokens (typed escapes from an untyped
+    // caller) collapse to `undefined` so the writer falls back to the
+    // OOXML default `b="0"` (non-bold) Excel itself emits on a fresh
+    // axis title. The per-family axis builders only honour the flag
+    // when the axis actually renders a title.
+    xAxisTitleBold: normalizeAxisTitleBold(chart.axes?.x?.axisTitleBold),
+    yAxisTitleBold: normalizeAxisTitleBold(chart.axes?.y?.axisTitleBold),
     xGridlines: normalizeAxisGridlines(chart.axes?.x?.gridlines),
     yGridlines: normalizeAxisGridlines(chart.axes?.y?.gridlines),
     xScale: normalizeAxisScale(chart.axes?.x?.scale),
@@ -1033,6 +1043,24 @@ interface AxisRenderOptions {
    * and conversion semantics as {@link xAxisTitleFontSize}.
    */
   yAxisTitleFontSize: number | undefined;
+  /**
+   * Axis-title bold flag emitted on the X axis via
+   * `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr b=".."/></a:pPr>
+   * <a:r><a:rPr b=".."/></a:r></a:p></c:rich></c:tx></c:title>`. The
+   * OOXML `b` attribute is the `xsd:boolean` bold flag on
+   * `CT_TextCharacterProperties`; the writer emits `1` / `0` at the
+   * canonical slots. `undefined` collapses to the OOXML default `0`
+   * (non-bold) so a fresh chart matches Excel's reference
+   * serialization byte-for-byte. Only meaningful when the axis
+   * renders a title — the per-family axis builders gate the value on
+   * the `xAxisTitle` / `yAxisTitle` field.
+   */
+  xAxisTitleBold: boolean | undefined;
+  /**
+   * Axis-title bold flag emitted on the Y axis. Same shape and
+   * semantics as {@link xAxisTitleBold}.
+   */
+  yAxisTitleBold: boolean | undefined;
   xGridlines: { major: boolean; minor: boolean } | undefined;
   yGridlines: { major: boolean; minor: boolean } | undefined;
   xScale: ChartAxisScale | undefined;
@@ -1893,7 +1921,12 @@ function buildBarAxes(orientation: "bar" | "column", opts: AxisRenderOptions): s
   ];
   if (opts.xAxisTitle)
     catAxChildren.push(
-      buildAxisTitle(opts.xAxisTitle, opts.xAxisTitleRotation, opts.xAxisTitleFontSize),
+      buildAxisTitle(
+        opts.xAxisTitle,
+        opts.xAxisTitleRotation,
+        opts.xAxisTitleFontSize,
+        opts.xAxisTitleBold,
+      ),
     );
   catAxChildren.push(
     ...buildAxisNumFmt(opts.xNumFmt),
@@ -1949,7 +1982,12 @@ function buildBarAxes(orientation: "bar" | "column", opts: AxisRenderOptions): s
   ];
   if (opts.yAxisTitle)
     valAxChildren.push(
-      buildAxisTitle(opts.yAxisTitle, opts.yAxisTitleRotation, opts.yAxisTitleFontSize),
+      buildAxisTitle(
+        opts.yAxisTitle,
+        opts.yAxisTitleRotation,
+        opts.yAxisTitleFontSize,
+        opts.yAxisTitleBold,
+      ),
     );
   valAxChildren.push(
     ...buildAxisNumFmt(opts.yNumFmt),
@@ -2306,7 +2344,12 @@ function buildScatterAxes(opts: AxisRenderOptions): string[] {
   ];
   if (opts.xAxisTitle)
     xAxChildren.push(
-      buildAxisTitle(opts.xAxisTitle, opts.xAxisTitleRotation, opts.xAxisTitleFontSize),
+      buildAxisTitle(
+        opts.xAxisTitle,
+        opts.xAxisTitleRotation,
+        opts.xAxisTitleFontSize,
+        opts.xAxisTitleBold,
+      ),
     );
   xAxChildren.push(
     ...buildAxisNumFmt(opts.xNumFmt),
@@ -2341,7 +2384,12 @@ function buildScatterAxes(opts: AxisRenderOptions): string[] {
   ];
   if (opts.yAxisTitle)
     yAxChildren.push(
-      buildAxisTitle(opts.yAxisTitle, opts.yAxisTitleRotation, opts.yAxisTitleFontSize),
+      buildAxisTitle(
+        opts.yAxisTitle,
+        opts.yAxisTitleRotation,
+        opts.yAxisTitleFontSize,
+        opts.yAxisTitleBold,
+      ),
     );
   yAxChildren.push(
     ...buildAxisNumFmt(opts.yNumFmt),
@@ -2392,11 +2440,22 @@ function buildScatterAxes(opts: AxisRenderOptions): string[] {
  * that never set the field. The size lands on both the
  * default-paragraph `<a:defRPr>` and the literal run's `<a:rPr>` so
  * a re-parse picks the value up off either canonical slot.
+ *
+ * The optional `bold` parameter pins the title's `<a:defRPr b=".."/>`
+ * / `<a:rPr b=".."/>` attributes. The OOXML `b` attribute is the
+ * `xsd:boolean` bold flag on `CT_TextCharacterProperties`; the writer
+ * emits `1` / `0` at the canonical slots. Absence (`undefined`)
+ * collapses to the OOXML default `0` (non-bold) so a fresh chart
+ * matches Excel's reference serialization byte-for-byte. The flag
+ * lands on both `<a:defRPr>` and `<a:rPr>` so a re-parse picks the
+ * value up off either canonical slot — Excel keeps the two attributes
+ * in sync.
  */
 function buildAxisTitle(
   label: string,
   rotationDeg: number | undefined,
   fontSizePt: number | undefined,
+  bold: boolean | undefined,
 ): string {
   const rot = rotationDeg === undefined ? 0 : rotationDeg * TITLE_ROT_PER_DEGREE;
   // OOXML's `<a:defRPr sz="N"/>` / `<a:rPr sz="N"/>` attribute is in
@@ -2411,6 +2470,16 @@ function buildAxisTitle(
     fontSizePt === undefined
       ? AXIS_TITLE_DEFAULT_FONT_SIZE_SZ
       : fontSizePt * TITLE_FONT_SZ_PER_POINT;
+  // OOXML's `<a:defRPr b=".."/>` / `<a:rPr b=".."/>` attribute is the
+  // `xsd:boolean` bold flag on `CT_TextCharacterProperties`. The
+  // writer holds `axisTitleBold` as a boolean and emits `1` / `0` at
+  // the canonical slots. Absence (`undefined`) collapses to the OOXML
+  // default `0` (non-bold) so a fresh chart matches Excel's reference
+  // serialization byte-for-byte. The flag lands on both
+  // `<a:defRPr>` and `<a:rPr>` so a re-parse picks the value up off
+  // either canonical slot, mirroring the chart-level `buildTitle`
+  // writer.
+  const b = bold ? 1 : 0;
   return xmlElement("c:title", undefined, [
     xmlElement("c:tx", undefined, [
       xmlElement("c:rich", undefined, [
@@ -2428,9 +2497,9 @@ function buildAxisTitle(
         ),
         xmlSelfClose("a:lstStyle"),
         xmlElement("a:p", undefined, [
-          xmlElement("a:pPr", undefined, [xmlSelfClose("a:defRPr", { sz, b: 0 })]),
+          xmlElement("a:pPr", undefined, [xmlSelfClose("a:defRPr", { sz, b })]),
           xmlElement("a:r", undefined, [
-            xmlSelfClose("a:rPr", { lang: "en-US", sz, b: 0 }),
+            xmlSelfClose("a:rPr", { lang: "en-US", sz, b }),
             xmlElement("a:t", undefined, xmlEscape(label)),
           ]),
         ]),
@@ -2478,6 +2547,20 @@ function normalizeAxisTitleRotation(value: number | undefined): number | undefin
  */
 function normalizeAxisTitleFontSize(value: number | undefined): number | undefined {
   return normalizeTitleFontSize(value);
+}
+
+/**
+ * Normalize a {@link SheetChart.axes}.x.axisTitleBold value for the
+ * `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr b=".."/></a:pPr></a:p>
+ * </c:rich></c:tx></c:title>` writer slot inside an axis. Delegates
+ * to the chart-level {@link normalizeTitleBold} — `true` / `false`
+ * pass through literally, every other token (typed escape from an
+ * untyped caller, including `null`-shaped values) collapses to
+ * `undefined` so the writer falls back to the OOXML default `b="0"`
+ * (non-bold) Excel itself emits on a fresh axis title.
+ */
+function normalizeAxisTitleBold(value: boolean | undefined): boolean | undefined {
+  return normalizeTitleBold(value);
 }
 
 // ── Series ───────────────────────────────────────────────────────────
