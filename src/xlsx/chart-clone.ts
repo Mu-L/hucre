@@ -995,6 +995,27 @@ export interface CloneChartOptions {
        */
       labelUnderline?: boolean | null;
       /**
+       * Override `SheetChart.axes.x.labelStrike`. `undefined` (or
+       * omitted) inherits the source axis's tick-label strikethrough
+       * flag; `null` drops the inherited value (the writer falls back
+       * to the OOXML default — the tick labels render non-
+       * strikethrough); a `boolean` replaces it.
+       *
+       * Non-boolean overrides (typed escapes from an untyped caller)
+       * collapse to a drop so the cloned `SheetChart` always carries
+       * a value the writer will accept.
+       *
+       * `<c:txPr>` lives on every axis flavour per the OOXML schema,
+       * so the override carries through every chart family that has
+       * axes (bar / column / line / area / scatter). Silently dropped
+       * on `pie` / `doughnut` charts since neither has axes. Composes
+       * independently with {@link labelRotation} / {@link labelFontSize} /
+       * {@link labelBold} / {@link labelItalic} / {@link labelColor} /
+       * {@link labelUnderline}: all seven knobs land on the same
+       * `<c:txPr>` body.
+       */
+      labelStrike?: boolean | null;
+      /**
        * Override the reverse-axis flag. `undefined` (or omitted)
        * inherits the source axis' parsed value; `null` drops it (the
        * writer falls back to the OOXML default `"minMax"` — forward
@@ -1172,6 +1193,8 @@ export interface CloneChartOptions {
       labelColor?: string | null;
       /** See {@link CloneChartOptions.axes.x.labelUnderline}. */
       labelUnderline?: boolean | null;
+      /** See {@link CloneChartOptions.axes.x.labelStrike}. */
+      labelStrike?: boolean | null;
       /** See {@link CloneChartOptions.axes.x.hidden}. */
       hidden?: boolean | null;
       /** See {@link CloneChartOptions.axes.x.reverse}. */
@@ -3127,6 +3150,21 @@ function resolveAxes(
     sourceAxes?.y?.labelUnderline,
     overrides?.y?.labelUnderline,
   );
+  // `<c:txPr><a:p><a:pPr><a:defRPr strike=".."/></a:pPr></a:p></c:txPr>`
+  // shares the same `<c:txPr>` slot as the rotation / size / bold /
+  // italic / color / underline resolvers above, and the same per-axis
+  // scope rule (every axis flavour carries `<c:txPr>`; pie / doughnut
+  // already short-circuited upstream). Non-boolean overrides collapse
+  // to a drop so the cloned `SheetChart` always carries a value the
+  // writer will accept.
+  const xLabelStrike = applyLabelStrikeOverride(
+    sourceAxes?.x?.labelStrike,
+    overrides?.x?.labelStrike,
+  );
+  const yLabelStrike = applyLabelStrikeOverride(
+    sourceAxes?.y?.labelStrike,
+    overrides?.y?.labelStrike,
+  );
   const xReverse = applyReverseOverride(sourceAxes?.x?.reverse, overrides?.x?.reverse);
   const yReverse = applyReverseOverride(sourceAxes?.y?.reverse, overrides?.y?.reverse);
   // `tickLblSkip` / `tickMarkSkip` only render on category axes
@@ -3287,6 +3325,7 @@ function resolveAxes(
     xLabelItalic !== undefined ||
     xLabelColor !== undefined ||
     xLabelUnderline !== undefined ||
+    xLabelStrike !== undefined ||
     xReverse !== undefined ||
     xTickLblSkip !== undefined ||
     xTickMarkSkip !== undefined ||
@@ -3324,6 +3363,7 @@ function resolveAxes(
     if (xLabelItalic !== undefined) out.x.labelItalic = xLabelItalic;
     if (xLabelColor !== undefined) out.x.labelColor = xLabelColor;
     if (xLabelUnderline !== undefined) out.x.labelUnderline = xLabelUnderline;
+    if (xLabelStrike !== undefined) out.x.labelStrike = xLabelStrike;
     if (xReverse !== undefined) out.x.reverse = xReverse;
     if (xTickLblSkip !== undefined) out.x.tickLblSkip = xTickLblSkip;
     if (xTickMarkSkip !== undefined) out.x.tickMarkSkip = xTickMarkSkip;
@@ -3358,6 +3398,7 @@ function resolveAxes(
     yLabelItalic !== undefined ||
     yLabelColor !== undefined ||
     yLabelUnderline !== undefined ||
+    yLabelStrike !== undefined ||
     yHidden !== undefined ||
     yReverse !== undefined ||
     yCrossesPair.crosses !== undefined ||
@@ -3389,6 +3430,7 @@ function resolveAxes(
     if (yLabelItalic !== undefined) out.y.labelItalic = yLabelItalic;
     if (yLabelColor !== undefined) out.y.labelColor = yLabelColor;
     if (yLabelUnderline !== undefined) out.y.labelUnderline = yLabelUnderline;
+    if (yLabelStrike !== undefined) out.y.labelStrike = yLabelStrike;
     if (yHidden !== undefined) out.y.hidden = yHidden;
     if (yReverse !== undefined) out.y.reverse = yReverse;
     if (yCrossesPair.crosses !== undefined) out.y.crosses = yCrossesPair.crosses;
@@ -3839,6 +3881,35 @@ function applyLabelColorOverride(
  * field on those families since neither has axes.
  */
 function applyLabelUnderlineOverride(
+  source: boolean | undefined,
+  override: boolean | null | undefined,
+): boolean | undefined {
+  if (override === undefined) {
+    if (source === true) return true;
+    if (source === false) return false;
+    return undefined;
+  }
+  if (override === null) return undefined;
+  if (override === true) return true;
+  if (override === false) return false;
+  return undefined;
+}
+
+/**
+ * Resolve a `labelStrike` override using the same `undefined`
+ * (inherit) / `null` (drop) / value (replace) grammar as the other
+ * axis helpers. Mirrors {@link applyLabelBoldOverride} /
+ * {@link applyLabelItalicOverride} / {@link applyLabelUnderlineOverride}
+ * — non-boolean overrides (typed escapes from an untyped caller)
+ * collapse to `undefined`, a `null` override always drops the
+ * inherited flag, and a literal `true` / `false` replaces it.
+ *
+ * The `<c:txPr>` block sits on every axis flavour per the OOXML
+ * schema, so the override applies on every chart family that has
+ * axes. The pie / doughnut short-circuit upstream collapses the
+ * field on those families since neither has axes.
+ */
+function applyLabelStrikeOverride(
   source: boolean | undefined,
   override: boolean | null | undefined,
 ): boolean | undefined {

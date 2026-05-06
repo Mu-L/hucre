@@ -694,6 +694,16 @@ function parseAxisInfo(
   // only `"sng"`). Surfaced on every axis flavour for symmetry with
   // the writer.
   const labelUnderline = parseAxisLabelUnderline(axis);
+  // `<c:txPr><a:p><a:pPr><a:defRPr strike=".."/></a:pPr></a:p></c:txPr>` —
+  // tick-label strikethrough flag. Same `<c:txPr>` slot scope as the
+  // rotation / size / bold / italic / color / underline readers above.
+  // Only the UI-default `"sngStrike"` surfaces as `true`; the OOXML
+  // default `"noStrike"`, absence, and the non-UI `"dblStrike"` variant
+  // all collapse to `undefined` so absence and the OOXML default round-
+  // trip identically through the writer (which emits only
+  // `"sngStrike"`). Surfaced on every axis flavour for symmetry with
+  // the writer.
+  const labelStrike = parseAxisLabelStrike(axis);
   // <c:scaling><c:orientation val=".."/></c:scaling> — ST_Orientation
   // accepts "minMax" (default, low → high) and "maxMin" (reversed).
   // The default collapses to undefined so a fresh chart and a chart
@@ -782,6 +792,7 @@ function parseAxisInfo(
     labelItalic === undefined &&
     labelColor === undefined &&
     labelUnderline === undefined &&
+    labelStrike === undefined &&
     reverse === undefined &&
     tickLblSkip === undefined &&
     tickMarkSkip === undefined &&
@@ -818,6 +829,7 @@ function parseAxisInfo(
   if (labelItalic !== undefined) out.labelItalic = labelItalic;
   if (labelColor !== undefined) out.labelColor = labelColor;
   if (labelUnderline !== undefined) out.labelUnderline = labelUnderline;
+  if (labelStrike !== undefined) out.labelStrike = labelStrike;
   if (reverse !== undefined) out.reverse = reverse;
   if (tickLblSkip !== undefined) out.tickLblSkip = tickLblSkip;
   if (tickMarkSkip !== undefined) out.tickMarkSkip = tickMarkSkip;
@@ -1369,6 +1381,60 @@ function parseAxisLabelUnderline(axis: XmlElement): boolean | undefined {
   // `"sng"`, so reporting a non-single underline here would silently
   // downgrade the choice on round-trip.
   if (raw === "sng") return true;
+  return undefined;
+}
+
+/**
+ * Pull the axis tick-label strikethrough flag off the canonical
+ * `<c:txPr><a:p><a:pPr><a:defRPr strike=".."/></a:pPr></a:p></c:txPr>`
+ * chain Excel writes when the user pins a strikethrough on the axis
+ * tick labels.
+ *
+ * The OOXML `strike` attribute is the `ST_TextStrikeType` enum on
+ * `CT_TextCharacterProperties` (ECMA-376 Part 1, §21.1.2.3.7) with
+ * three values: `"noStrike"` (the OOXML application default),
+ * `"sngStrike"` (single line — the value Excel's UI checkbox
+ * emits), and `"dblStrike"` (double line — a non-UI variant). The
+ * reader surfaces only the UI-default `"sngStrike"` as `true`;
+ * `"noStrike"` (the OOXML application default), absence, and the
+ * non-UI `"dblStrike"` variant all collapse to `undefined` — the
+ * writer emits only `"sngStrike"`, so reporting `"dblStrike"` as
+ * `true` would silently downgrade the choice to a single line on
+ * round-trip. Unknown / malformed `strike` tokens likewise drop to
+ * `undefined`.
+ *
+ * Mirrors {@link parseAxisTitleStrike} for tick labels — same
+ * canonical-slot semantics but scoped to the axis-level `<c:txPr>` so
+ * a stray `<a:defRPr strike=".."/>` inside `<c:title><c:tx><c:rich>`
+ * (surfaced by {@link parseAxisTitleStrike}) cannot leak in. Returns
+ * `undefined` whenever the axis omits `<c:txPr>` entirely or the
+ * canonical `<a:p><a:pPr><a:defRPr>` chain is malformed.
+ *
+ * The `<c:txPr>` element sits on every axis flavour — `<c:catAx>` /
+ * `<c:valAx>` / `<c:dateAx>` / `<c:serAx>` all carry the optional
+ * element per the OOXML schema. The reader surfaces the flag
+ * regardless of axis flavour so a parsed chart preserves the value
+ * for symmetry with the writer-side
+ * {@link SheetChart.axes}.x.labelStrike.
+ */
+function parseAxisLabelStrike(axis: XmlElement): boolean | undefined {
+  const txPr = findChild(axis, "txPr");
+  if (!txPr) return undefined;
+  const p = findChild(txPr, "p");
+  if (!p) return undefined;
+  const pPr = findChild(p, "pPr");
+  if (!pPr) return undefined;
+  const defRPr = findChild(pPr, "defRPr");
+  if (!defRPr) return undefined;
+  const raw = defRPr.attrs.strike;
+  // Only the UI-default `"sngStrike"` surfaces as `true`. The OOXML
+  // application default `"noStrike"`, the non-UI `"dblStrike"` variant,
+  // and unknown / malformed tokens all collapse to `undefined` so
+  // absence and the OOXML default round-trip identically through the
+  // writer; the writer emits only `"sngStrike"`, so reporting
+  // `"dblStrike"` here would silently downgrade the choice on round-
+  // trip.
+  if (raw === "sngStrike") return true;
   return undefined;
 }
 
