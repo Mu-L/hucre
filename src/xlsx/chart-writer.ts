@@ -1113,6 +1113,7 @@ function resolveDataTable(chart: SheetChart):
       bold: boolean | undefined;
       italic: boolean | undefined;
       underline: boolean | undefined;
+      strikethrough: boolean | undefined;
     }
   | undefined {
   // Pie / doughnut have no axes — the OOXML schema places `<c:dTable>`
@@ -1135,6 +1136,7 @@ function resolveDataTable(chart: SheetChart):
       bold: undefined,
       italic: undefined,
       underline: undefined,
+      strikethrough: undefined,
     };
   }
 
@@ -1152,6 +1154,7 @@ function resolveDataTable(chart: SheetChart):
     bold: resolveDataTableBold(raw.bold),
     italic: resolveDataTableItalic(raw.italic),
     underline: resolveDataTableUnderline(raw.underline),
+    strikethrough: resolveDataTableStrikethrough(raw.strikethrough),
   };
 }
 
@@ -1241,6 +1244,26 @@ function resolveDataTableUnderline(value: boolean | undefined): boolean | undefi
 }
 
 /**
+ * Resolve `<c:dTable><c:txPr><a:p><a:pPr><a:defRPr strike=".."/>
+ * </a:pPr></a:p></c:txPr></c:dTable>` from
+ * {@link ChartDataTable.strikethrough}.
+ *
+ * Returns `true` when the caller pins the strikethrough flag literally;
+ * every other value (explicit `false`, absence, non-boolean tokens
+ * leaking past the type guard) collapses to `undefined` so the writer
+ * never emits a `strike` attribute below `"sngStrike"`. The OOXML
+ * default `"noStrike"` is functionally identical to absence — the
+ * writer keeps the surfaced shape consistent with what Excel's UI
+ * authors (`"sngStrike"` only, never `"noStrike"` or `"dblStrike"`),
+ * mirroring how `resolveTitleStrike` / `resolveLegendStrikethrough` /
+ * `resolveDataLabelsStrikethrough` land on their `<a:defRPr>` slots.
+ */
+function resolveDataTableStrikethrough(value: boolean | undefined): boolean | undefined {
+  if (value === true) return true;
+  return undefined;
+}
+
+/**
  * Serialize a resolved data-table into `<c:dTable>` with its four
  * required boolean children, in the order CT_DTable mandates:
  * `showHorzBorder`, `showVertBorder`, `showOutline`, `showKeys`. When
@@ -1266,6 +1289,7 @@ function buildDataTable(table: {
   bold: boolean | undefined;
   italic: boolean | undefined;
   underline: boolean | undefined;
+  strikethrough: boolean | undefined;
 }): string {
   const children: string[] = [
     xmlSelfClose("c:showHorzBorder", { val: table.showHorzBorder ? 1 : 0 }),
@@ -1284,6 +1308,7 @@ function buildDataTable(table: {
     table.bold,
     table.italic,
     table.underline,
+    table.strikethrough,
   );
   if (txPrXml !== undefined) children.push(txPrXml);
   return xmlElement("c:dTable", undefined, children);
@@ -1316,13 +1341,15 @@ function buildDataTableTxPr(
   bold: boolean | undefined,
   italic: boolean | undefined,
   underline: boolean | undefined,
+  strikethrough: boolean | undefined,
 ): string | undefined {
   if (
     fontSizePt === undefined &&
     rgbHex === undefined &&
     bold === undefined &&
     italic === undefined &&
-    underline === undefined
+    underline === undefined &&
+    strikethrough === undefined
   )
     return undefined;
   const defRPrAttrs: Record<string, string | number> = {};
@@ -1330,6 +1357,13 @@ function buildDataTableTxPr(
   if (bold !== undefined) defRPrAttrs.b = bold ? 1 : 0;
   if (italic !== undefined) defRPrAttrs.i = italic ? 1 : 0;
   if (underline !== undefined) defRPrAttrs.u = underline ? "sng" : "none";
+  // Strikethrough rides as `strike="sngStrike"` on the same
+  // `<a:defRPr>` slot. Absence collapses to omitting the attribute
+  // entirely (the OOXML default `"noStrike"` is functionally
+  // identical to absence — the reader collapses both to `undefined`).
+  // The writer never emits `"noStrike"` or `"dblStrike"` so the
+  // surfaced shape stays consistent with Excel's UI checkbox.
+  if (strikethrough === true) defRPrAttrs.strike = "sngStrike";
   // OOXML's `<a:defRPr><a:solidFill><a:srgbClr val="RRGGBB"/>
   // </a:solidFill></a:defRPr>` carries the data-table font color.
   // Absence (`undefined`) collapses to skipping the `<a:solidFill>`
