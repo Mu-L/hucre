@@ -2508,6 +2508,17 @@ function parseDataLabels(el: XmlElement): ChartDataLabelsInfo | undefined {
     }
   }
 
+  // `<c:txPr><a:p><a:pPr><a:defRPr sz="N"/></a:pPr></a:p></c:txPr>`
+  // — data-label font size pinned via Excel's "Format Data Labels ->
+  // Font -> Size" knob. The OOXML attribute is in 100ths of a point on
+  // `CT_TextCharacterProperties`' `sz` slot; the reader divides by
+  // 100 at parse time so the surfaced value matches what the user
+  // sees in the UI. Out-of-range / malformed tokens collapse to
+  // `undefined` so absence and a malformed source value round-trip
+  // identically through `cloneChart`.
+  const fontSize = parseDataLabelsFontSize(el);
+  if (fontSize !== undefined) out.fontSize = fontSize;
+
   // Empty record is meaningless to a consumer — collapse to undefined.
   if (
     out.position === undefined &&
@@ -2518,11 +2529,53 @@ function parseDataLabels(el: XmlElement): ChartDataLabelsInfo | undefined {
     !out.showLegendKey &&
     out.separator === undefined &&
     out.numberFormat === undefined &&
-    out.showLeaderLines === undefined
+    out.showLeaderLines === undefined &&
+    out.fontSize === undefined
   ) {
     return undefined;
   }
   return out;
+}
+
+/**
+ * Pull `<c:dLbls><c:txPr><a:p><a:pPr><a:defRPr sz="N"/></a:pPr></a:p>
+ * </c:txPr></c:dLbls>` off a data-labels block. Returns the font size
+ * in points (`1..400`), or `undefined` when the element is absent /
+ * the chain is malformed at any link / the surfaced value is out of
+ * the supported range.
+ *
+ * The OOXML attribute is in 100ths of a point on
+ * `CT_TextCharacterProperties`' `sz` slot (ECMA-376 Part 1,
+ * §21.1.2.3.7); the reader divides by 100 at parse time so the
+ * surfaced value matches what the user sees in Excel's UI. Mirrors
+ * the chart-title / axis-title / axis tick-label / legend font-size
+ * readers exactly so a parsed value slots straight back into the
+ * writer's emit path.
+ */
+function parseDataLabelsFontSize(dLbls: XmlElement): number | undefined {
+  const txPr = findChild(dLbls, "txPr");
+  if (!txPr) return undefined;
+  const p = findChild(txPr, "p");
+  if (!p) return undefined;
+  const pPr = findChild(p, "pPr");
+  if (!pPr) return undefined;
+  const defRPr = findChild(pPr, "defRPr");
+  if (!defRPr) return undefined;
+  const raw = defRPr.attrs.sz;
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) return undefined;
+  const parsed = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(parsed)) return undefined;
+  // Convert from 100ths of a point to points, rounding to the nearest
+  // 0.5pt to match the granularity Excel's UI exposes. Mirrors the
+  // chart-title / axis-title / tick-label / legend sibling parsers
+  // exactly so a parsed value flows through every typography slot
+  // without bookkeeping the units.
+  const halfSteps = Math.round((parsed / TITLE_FONT_SZ_PER_POINT) * 2);
+  const points = halfSteps / 2;
+  if (points < TITLE_FONT_SIZE_MIN_PT || points > TITLE_FONT_SIZE_MAX_PT) return undefined;
+  return points;
 }
 
 /**
