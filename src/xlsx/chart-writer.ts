@@ -1415,6 +1415,7 @@ function resolveDataTable(chart: SheetChart):
       underline: boolean | undefined;
       strikethrough: boolean | undefined;
       fontFamily: string | undefined;
+      fillColor: string | undefined;
     }
   | undefined {
   // Pie / doughnut have no axes — the OOXML schema places `<c:dTable>`
@@ -1439,6 +1440,7 @@ function resolveDataTable(chart: SheetChart):
       underline: undefined,
       strikethrough: undefined,
       fontFamily: undefined,
+      fillColor: undefined,
     };
   }
 
@@ -1458,6 +1460,7 @@ function resolveDataTable(chart: SheetChart):
     underline: resolveDataTableUnderline(raw.underline),
     strikethrough: resolveDataTableStrikethrough(raw.strikethrough),
     fontFamily: resolveDataTableFontFamily(raw.fontFamily),
+    fillColor: resolveDataTableFillColor(raw.fillColor),
   };
 }
 
@@ -1586,6 +1589,25 @@ function resolveDataTableFontFamily(value: string | undefined): string | undefin
 }
 
 /**
+ * Resolve `<c:dTable><c:spPr><a:solidFill><a:srgbClr val="RRGGBB"/>
+ * </a:solidFill></c:spPr></c:dTable>` from
+ * {@link ChartDataTable.fillColor}.
+ *
+ * Returns the 6-character uppercase hex string the writer emits, or
+ * `undefined` when the caller leaves the field unset / passed a
+ * malformed token. Delegates to {@link normalizeTitleColor} so the
+ * accept-with-or-without-`#` grammar matches the chart-title /
+ * plot-area / legend / chart-space / axis-title fill color resolvers
+ * exactly. The `<c:spPr>` slot lives between the four required
+ * boolean children and the optional `<c:txPr>` per CT_DTable
+ * (ECMA-376 Part 1, §21.2.2.54), distinct from the `<c:txPr>` block
+ * that carries {@link ChartDataTable.fontColor}.
+ */
+function resolveDataTableFillColor(value: string | undefined): string | undefined {
+  return normalizeTitleColor(value);
+}
+
+/**
  * Serialize a resolved data-table into `<c:dTable>` with its four
  * required boolean children, in the order CT_DTable mandates:
  * `showHorzBorder`, `showVertBorder`, `showOutline`, `showKeys`. When
@@ -1613,6 +1635,7 @@ function buildDataTable(table: {
   underline: boolean | undefined;
   strikethrough: boolean | undefined;
   fontFamily: string | undefined;
+  fillColor: string | undefined;
 }): string {
   const children: string[] = [
     xmlSelfClose("c:showHorzBorder", { val: table.showHorzBorder ? 1 : 0 }),
@@ -1620,11 +1643,17 @@ function buildDataTable(table: {
     xmlSelfClose("c:showOutline", { val: table.showOutline ? 1 : 0 }),
     xmlSelfClose("c:showKeys", { val: table.showKeys ? 1 : 0 }),
   ];
-  // CT_DTable schema places `<c:txPr>` after the four required
-  // boolean children, before the optional `<c:extLst>` (ECMA-376
-  // Part 1, §21.2.2.54). The writer skips emission entirely when no
-  // typography knob is pinned so a fresh chart matches Excel's
+  // CT_DTable schema places `<c:spPr>` after the four required
+  // boolean children, before `<c:txPr>` and the optional `<c:extLst>`
+  // (ECMA-376 Part 1, §21.2.2.54). The writer skips emission entirely
+  // when no fill knob is pinned so a fresh chart matches Excel's
   // reference serialization byte-for-byte.
+  const spPrXml = buildDataTableSpPr(table.fillColor);
+  if (spPrXml !== undefined) children.push(spPrXml);
+  // CT_DTable schema places `<c:txPr>` after `<c:spPr>` and before
+  // the optional `<c:extLst>` (ECMA-376 Part 1, §21.2.2.54). The writer
+  // skips emission entirely when no typography knob is pinned so a
+  // fresh chart matches Excel's reference serialization byte-for-byte.
   const txPrXml = buildDataTableTxPr(
     table.fontSize,
     table.fontColor,
@@ -1636,6 +1665,31 @@ function buildDataTable(table: {
   );
   if (txPrXml !== undefined) children.push(txPrXml);
   return xmlElement("c:dTable", undefined, children);
+}
+
+/**
+ * Build the optional `<c:spPr>` block inside `<c:dTable>`. Currently
+ * surfaces only the solid fill color knob ({@link
+ * ChartDataTable.fillColor}) — every other `<c:spPr>` child (`<a:ln>`
+ * stroke, `<a:effectLst>` effects, gradient / pattern / picture fills)
+ * is intentionally not modelled at this layer.
+ *
+ * Returns `undefined` when the caller leaves the field unset / passed
+ * a malformed token so the writer skips the entire `<c:spPr>` block —
+ * an empty `<c:spPr/>` collapses to the inherited theme fill Excel
+ * picks anyway, and omitting it keeps untouched chart XML byte-clean.
+ *
+ * Mirrors {@link buildPlotAreaSpPr} / {@link buildChartSpaceSpPr}
+ * but on a distinct host element — the data-table fill paints the
+ * background of the table grid, while the plot-area / chart-space
+ * fills paint the inner band / entire chart frame.
+ */
+function buildDataTableSpPr(fillColor: string | undefined): string | undefined {
+  if (fillColor === undefined) return undefined;
+  const solidFill = xmlElement("a:solidFill", undefined, [
+    xmlSelfClose("a:srgbClr", { val: fillColor }),
+  ]);
+  return xmlElement("c:spPr", undefined, [solidFill]);
 }
 
 /**
