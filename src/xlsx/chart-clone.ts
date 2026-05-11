@@ -41,14 +41,14 @@ import type {
   ChartView3D,
   SheetChart,
   WriteChartKind,
-} from "../_types";
-import { resolveBorderDash, resolveBorderWidthPt } from "./chart/shape";
+} from "../_types"
+import { resolveBorderDash, resolveBorderWidthPt } from "./chart/shape"
 import {
   resolveBackWallThickness,
   resolveFloorThickness,
   resolveSideWallThickness,
   resolveView3D,
-} from "./chart/walls";
+} from "./chart/walls"
 import {
   resolveCloneTitleBold,
   resolveCloneTitleBorderColor,
@@ -63,7 +63,7 @@ import {
   resolveCloneTitleRotation,
   resolveCloneTitleStrike,
   resolveCloneTitleUnderline,
-} from "./chart/title";
+} from "./chart/title"
 import {
   resolveCloneLegendBold,
   resolveCloneLegendBorderColor,
@@ -78,9 +78,9 @@ import {
   resolveCloneLegendOverlay,
   resolveCloneLegendStrikethrough,
   resolveCloneLegendUnderline,
-} from "./chart/legend";
-import { buildSeriesFromSource, resolveShowLineMarkers } from "./chart/series";
-import { resolveAxes, resolveCloneAutoTitleDeleted } from "./chart/axis";
+} from "./chart/legend"
+import { buildSeriesFromSource, resolveShowLineMarkers } from "./chart/series"
+import { resolveAxes, resolveCloneAutoTitleDeleted } from "./chart/axis"
 import {
   resolveCloneDropLines,
   resolveCloneHiLowLines,
@@ -93,9 +93,9 @@ import {
   resolveCloneUpDownBars,
   resolveCloneUpDownBarsGapWidth,
   resolveCloneVaryColors,
-} from "./chart/plotArea";
-import { resolveCloneDataTable } from "./chart/dataTable";
-import { resolveChartDataLabels } from "./chart/dataLabels";
+} from "./chart/plotArea"
+import { resolveCloneDataTable } from "./chart/dataTable"
+import { resolveChartDataLabels } from "./chart/dataLabels"
 import {
   resolveCloneChartSpaceBorderColor,
   resolveCloneChartSpaceFillColor,
@@ -107,7 +107,7 @@ import {
   resolveCloneRoundedCorners,
   resolveCloneShowDLblsOverMax,
   resolveCloneStyle,
-} from "./chart/chartSpace";
+} from "./chart/chartSpace"
 
 // ── Public API ───────────────────────────────────────────────────────
 
@@ -120,13 +120,13 @@ import {
  * template).
  */
 export interface CloneChartSeriesOverride {
-  name?: string | null;
+  name?: string | null
   /** A1 range for `<c:val>` / `<c:yVal>`. Required when the source has none. */
-  values?: string;
+  values?: string
   /** A1 range for `<c:cat>` / `<c:xVal>`. */
-  categories?: string | null;
+  categories?: string | null
   /** 6-digit RGB hex (e.g. `"1F77B4"`). */
-  color?: string | null;
+  color?: string | null
   /**
    * Per-series data label override. `undefined` (or omitted) inherits
    * the source series' `dataLabels`; `null` drops the inherited block;
@@ -134,7 +134,7 @@ export interface CloneChartSeriesOverride {
    * chart-level default); a `ChartDataLabels` object replaces the
    * inherited block wholesale.
    */
-  dataLabels?: ChartDataLabels | false | null;
+  dataLabels?: ChartDataLabels | false | null
   /**
    * Smoothed-line override. `undefined` (or omitted) inherits the source
    * series' `smooth`; `null` drops the inherited flag (the cloned series
@@ -142,7 +142,7 @@ export interface CloneChartSeriesOverride {
    * for `line` and `scatter` clones — silently dropped from the output
    * when the resolved chart type is anything else.
    */
-  smooth?: boolean | null;
+  smooth?: boolean | null
   /**
    * Line stroke override. `undefined` (or omitted) inherits the source
    * series' `stroke`; `null` drops the inherited block (the cloned
@@ -152,7 +152,7 @@ export interface CloneChartSeriesOverride {
    * Only meaningful for `line` and `scatter` clones — silently dropped
    * from the output when the resolved chart type is anything else.
    */
-  stroke?: ChartLineStroke | null;
+  stroke?: ChartLineStroke | null
   /**
    * Marker override. `undefined` (or omitted) inherits the source
    * series' `marker`; `null` drops the inherited block (the cloned
@@ -162,7 +162,7 @@ export interface CloneChartSeriesOverride {
    * Only meaningful for `line` and `scatter` clones — silently dropped
    * from the output when the resolved chart type is anything else.
    */
-  marker?: ChartMarker | null;
+  marker?: ChartMarker | null
   /**
    * Invert-if-negative override. `undefined` (or omitted) inherits the
    * source series' `invertIfNegative`; `null` drops the inherited flag
@@ -171,7 +171,7 @@ export interface CloneChartSeriesOverride {
    * `column` clones — silently dropped from the output when the
    * resolved chart type is anything else.
    */
-  invertIfNegative?: boolean | null;
+  invertIfNegative?: boolean | null
   /**
    * Slice-explosion override (in percent of the radius). `undefined`
    * (or omitted) inherits the source series' `explosion`; `null` drops
@@ -181,36 +181,36 @@ export interface CloneChartSeriesOverride {
    * Only meaningful for `pie` and `doughnut` clones — silently dropped
    * from the output when the resolved chart type is anything else.
    */
-  explosion?: number | null;
+  explosion?: number | null
   /**
    * Per-data-point override array. `undefined` inherits the source
    * series' `dataPoints`; `null` drops them; an array replaces.
    */
-  dataPoints?: ChartDataPoint[] | null;
+  dataPoints?: ChartDataPoint[] | null
   /**
    * Per-series trendline override array. `undefined` inherits the
    * source series' `trendlines`; `null` drops them; an array replaces.
    * Silently dropped on pie / doughnut clones.
    */
-  trendlines?: ChartTrendline[] | null;
+  trendlines?: ChartTrendline[] | null
   /**
    * Per-series error-bar override array. `undefined` inherits the
    * source series' `errorBars`; `null` drops them; an array replaces.
    * Silently dropped on pie / doughnut clones.
    */
-  errorBars?: ChartErrorBars[] | null;
+  errorBars?: ChartErrorBars[] | null
   /**
    * Bubble-size A1 range override. `undefined` inherits the source
    * series' parsed `bubbleSizeRef`; `null` drops it; a string replaces.
    * Silently dropped on every family except `bubble`.
    */
-  bubbleSize?: string | null;
+  bubbleSize?: string | null
   /**
    * 3D shape variant override. `undefined` inherits the source series'
    * `shape3D`; `null` drops it; a {@link ChartShape3D} replaces.
    * Silently dropped on every family except `bar3D`.
    */
-  shape3D?: ChartShape3D | null;
+  shape3D?: ChartShape3D | null
 }
 
 /**
@@ -225,26 +225,26 @@ export interface CloneChartOptions {
    * Cell anchor for the cloned chart. `to` defaults to a 6×15 area
    * below `from`, mirroring `SheetChart.anchor`.
    */
-  anchor: SheetChart["anchor"];
+  anchor: SheetChart["anchor"]
   /**
    * Override the chart family. When omitted, the source's first
    * write-compatible kind is used. An explicit value lets callers
    * narrow a combo chart down to one renderable type or flatten a
    * `doughnut` template into a plain `pie`.
    */
-  type?: WriteChartKind;
+  type?: WriteChartKind
   /** Override the chart title. Pass `null` to drop the source title. */
-  title?: string | null;
+  title?: string | null
   /** Replace the entire series array (skips per-series merging). */
-  series?: ChartSeries[];
+  series?: ChartSeries[]
   /**
    * Per-series overrides. Indices line up with the source's
    * {@link Chart.series}. Use this to remap data ranges without
    * rewriting every other field.
    */
-  seriesOverrides?: ReadonlyArray<CloneChartSeriesOverride | undefined>;
+  seriesOverrides?: ReadonlyArray<CloneChartSeriesOverride | undefined>
   /** Override `SheetChart.legend`. */
-  legend?: SheetChart["legend"];
+  legend?: SheetChart["legend"]
   /**
    * Override the chart-level legend-overlay flag. `undefined` (or
    * omitted) inherits the source's parsed value; `null` drops the
@@ -257,7 +257,7 @@ export interface CloneChartOptions {
    * — there is no overlay flag to set on a hidden legend, so leaking
    * the value into the output would carry a toggle Excel never reads.
    */
-  legendOverlay?: boolean | null;
+  legendOverlay?: boolean | null
   /**
    * Override the chart-level per-series legend-entry overrides.
    * `undefined` (or omitted) inherits the source's parsed list; `null`
@@ -276,7 +276,7 @@ export interface CloneChartOptions {
    * at a real series still emits — Excel renders it harmlessly — but a
    * caller can pass `null` (or an empty array) to start fresh.
    */
-  legendEntries?: ChartLegendEntry[] | null;
+  legendEntries?: ChartLegendEntry[] | null
   /**
    * Override `SheetChart.legendFontSize`. `undefined` (or omitted)
    * inherits the source's parsed `legendFontSize`; `null` drops the
@@ -301,7 +301,7 @@ export interface CloneChartOptions {
    * dashboard chart whose user pinned a custom legend size now
    * round-trips that pin through the parse / clone / write loop.
    */
-  legendFontSize?: number | null;
+  legendFontSize?: number | null
   /**
    * Override `SheetChart.legendBold`. `undefined` (or omitted) inherits
    * the source's parsed `legendBold`; `null` drops the inherited flag
@@ -324,7 +324,7 @@ export interface CloneChartOptions {
    * dashboard chart whose user pinned a custom legend bold flag now
    * round-trips that pin through the parse / clone / write loop.
    */
-  legendBold?: boolean | null;
+  legendBold?: boolean | null
   /**
    * Override `SheetChart.legendItalic`. `undefined` (or omitted)
    * inherits the source's parsed `legendItalic`; `null` drops the
@@ -348,7 +348,7 @@ export interface CloneChartOptions {
    * dashboard chart whose user pinned a custom legend italic flag now
    * round-trips that pin through the parse / clone / write loop.
    */
-  legendItalic?: boolean | null;
+  legendItalic?: boolean | null
   /**
    * Override `SheetChart.legendUnderline`. `undefined` (or omitted)
    * inherits the source's parsed `legendUnderline`; `null` drops the
@@ -368,7 +368,7 @@ export interface CloneChartOptions {
    * `axes.x.axisTitleUnderline` / `axes.x.labelUnderline` so the
    * typography knobs compose the same way at the call site.
    */
-  legendUnderline?: boolean | null;
+  legendUnderline?: boolean | null
   /**
    * Override `SheetChart.legendStrikethrough`. `undefined` (or omitted)
    * inherits the source's parsed `legendStrikethrough`; `null` drops
@@ -388,7 +388,7 @@ export interface CloneChartOptions {
    * `axes.x.axisTitleStrike` / `axes.x.labelStrikethrough` so the
    * typography knobs compose the same way at the call site.
    */
-  legendStrikethrough?: boolean | null;
+  legendStrikethrough?: boolean | null
   /**
    * Override `SheetChart.legendFontColor`. `undefined` (or omitted)
    * inherits the source's parsed `legendFontColor`; `null` drops the
@@ -412,7 +412,7 @@ export interface CloneChartOptions {
    * `axes.x.labelColor` so the typography knobs compose the same way
    * at the call site.
    */
-  legendFontColor?: string | null;
+  legendFontColor?: string | null
   /**
    * Override `SheetChart.legendFontFamily`. `undefined` (or omitted)
    * inherits the source's parsed `legendFontFamily`; `null` drops the
@@ -433,7 +433,7 @@ export interface CloneChartOptions {
    * `axes.x.axisTitleFontFamily` / `axes.x.labelFontFamily` so the
    * typography knobs compose the same way at the call site.
    */
-  legendFontFamily?: string | null;
+  legendFontFamily?: string | null
   /**
    * Override `SheetChart.legendLayout`. `undefined` (or omitted)
    * inherits the source's parsed `legendLayout`; `null` drops the
@@ -459,7 +459,7 @@ export interface CloneChartOptions {
    * `legendFontSize` so the legend knobs compose the same way at the
    * call site.
    */
-  legendLayout?: ChartManualLayout | null;
+  legendLayout?: ChartManualLayout | null
   /**
    * Override `SheetChart.legendFillColor`. `undefined` (or omitted)
    * inherits the source's parsed `legendFillColor`; `null` drops the
@@ -489,7 +489,7 @@ export interface CloneChartOptions {
    * different children of `<c:legend>` so a caller can pin both
    * without conflict.
    */
-  legendFillColor?: string | null;
+  legendFillColor?: string | null
   /**
    * Override `SheetChart.legendBorderColor`. `undefined` (or omitted)
    * inherits the source's parsed `legendBorderColor`; `null` drops the
@@ -515,7 +515,7 @@ export interface CloneChartOptions {
    * `<c:legend>` element will be emitted) — there is no slot to host
    * the stroke on a hidden legend.
    */
-  legendBorderColor?: string | null;
+  legendBorderColor?: string | null
   /**
    * Override `SheetChart.legendBorderWidth`. `undefined` (or omitted)
    * inherits the source's parsed `legendBorderWidth`; `null` drops the
@@ -543,7 +543,7 @@ export interface CloneChartOptions {
    * same accept-finite-number / clamp / snap grammar — but on the
    * legend's own `<c:spPr>` block.
    */
-  legendBorderWidth?: number | null;
+  legendBorderWidth?: number | null
   /**
    * Override `SheetChart.legendBorderDash`. `undefined` (or omitted)
    * inherits the source's parsed dash; `null` drops the inherited
@@ -554,7 +554,7 @@ export interface CloneChartOptions {
    * `legendBorderWidth`. Silently dropped from the cloned `SheetChart`
    * when the resolved legend is `false`.
    */
-  legendBorderDash?: ChartBorderDash | null;
+  legendBorderDash?: ChartBorderDash | null
   /**
    * Override `SheetChart.plotAreaLayout`. `undefined` (or omitted)
    * inherits the source's parsed `plotAreaLayout`; `null` drops the
@@ -577,7 +577,7 @@ export interface CloneChartOptions {
    * plot-area layout is never gated on a visibility flag — every chart
    * has a `<c:plotArea>` element to host the layout.
    */
-  plotAreaLayout?: ChartManualLayout | null;
+  plotAreaLayout?: ChartManualLayout | null
   /**
    * Override `SheetChart.plotAreaFillColor`. `undefined` (or omitted)
    * inherits the source's parsed `plotAreaFillColor`; `null` drops the
@@ -599,7 +599,7 @@ export interface CloneChartOptions {
    * knobs, the plot-area fill is never gated on a visibility flag —
    * every chart has a `<c:plotArea>` element to host the fill.
    */
-  plotAreaFillColor?: string | null;
+  plotAreaFillColor?: string | null
   /**
    * Override `SheetChart.plotAreaBorderColor`. `undefined` (or omitted)
    * inherits the source's parsed `plotAreaBorderColor`; `null` drops
@@ -624,7 +624,7 @@ export interface CloneChartOptions {
    * the border is never gated on a visibility flag — every chart has
    * a `<c:plotArea>` element to host the stroke.
    */
-  plotAreaBorderColor?: string | null;
+  plotAreaBorderColor?: string | null
   /**
    * Override `SheetChart.plotAreaBorderWidth`. `undefined` (or omitted)
    * inherits the source's parsed `plotAreaBorderWidth`; `null` drops
@@ -649,7 +649,7 @@ export interface CloneChartOptions {
    * never gated on a visibility flag — every chart has a `<c:plotArea>`
    * element to host the stroke.
    */
-  plotAreaBorderWidth?: number | null;
+  plotAreaBorderWidth?: number | null
   /**
    * Override `SheetChart.plotAreaBorderDash`. `undefined` (or omitted)
    * inherits the source's parsed dash; `null` drops the inherited
@@ -662,7 +662,7 @@ export interface CloneChartOptions {
    * element. Like the color / width knobs, the dash is never gated on
    * a visibility flag — every chart has a `<c:plotArea>` element.
    */
-  plotAreaBorderDash?: ChartBorderDash | null;
+  plotAreaBorderDash?: ChartBorderDash | null
   /**
    * Override `SheetChart.chartSpaceFillColor`. `undefined` (or omitted)
    * inherits the source's parsed `chartSpaceFillColor`; `null` drops
@@ -689,7 +689,7 @@ export interface CloneChartOptions {
    * frame, `<c:plotArea>` for the inner band that hosts the series),
    * so a caller can pin both without conflict.
    */
-  chartSpaceFillColor?: string | null;
+  chartSpaceFillColor?: string | null
   /**
    * Override `SheetChart.chartSpaceBorderColor`. `undefined` (or
    * omitted) inherits the source's parsed `chartSpaceBorderColor`;
@@ -714,7 +714,7 @@ export interface CloneChartOptions {
    * the border is never gated on a visibility flag — every chart has
    * a `<c:chartSpace>` document root to host the stroke.
    */
-  chartSpaceBorderColor?: string | null;
+  chartSpaceBorderColor?: string | null
   /**
    * Override `SheetChart.chartSpaceBorderWidth`. `undefined` (or
    * omitted) inherits the source's parsed width; `null` drops the
@@ -727,7 +727,7 @@ export interface CloneChartOptions {
    * and `chartSpaceBorderDash` — all three knobs share the same
    * `<a:ln>` element.
    */
-  chartSpaceBorderWidth?: number | null;
+  chartSpaceBorderWidth?: number | null
   /**
    * Override `SheetChart.chartSpaceBorderDash`. `undefined` (or
    * omitted) inherits the source's parsed dash style; `null` drops
@@ -735,26 +735,26 @@ export interface CloneChartOptions {
    * {@link ChartBorderDash} value replaces it. Unrecognized tokens
    * (and the OOXML default `"solid"`) collapse to `undefined`.
    */
-  chartSpaceBorderDash?: ChartBorderDash | null;
+  chartSpaceBorderDash?: ChartBorderDash | null
   /** Override `SheetChart.barGrouping`. */
-  barGrouping?: SheetChart["barGrouping"];
+  barGrouping?: SheetChart["barGrouping"]
   /**
    * Override `SheetChart.gapWidth` (only meaningful for `bar` /
    * `column`). Dropped silently when the resolved chart type is
    * neither — a gap-width hint inherited from a column template never
    * leaks into a line / pie clone.
    */
-  gapWidth?: number;
+  gapWidth?: number
   /**
    * Override `SheetChart.overlap` (only meaningful for `bar` /
    * `column`). Dropped silently when the resolved chart type is
    * neither.
    */
-  overlap?: number;
+  overlap?: number
   /** Override `SheetChart.lineGrouping`. */
-  lineGrouping?: SheetChart["lineGrouping"];
+  lineGrouping?: SheetChart["lineGrouping"]
   /** Override `SheetChart.areaGrouping`. */
-  areaGrouping?: SheetChart["areaGrouping"];
+  areaGrouping?: SheetChart["areaGrouping"]
   /**
    * Override `SheetChart.dropLines`. `undefined` (or omitted) inherits
    * the source's parsed flag; `null` drops the inherited value (the
@@ -762,7 +762,7 @@ export interface CloneChartOptions {
    * `boolean` replaces it. Only meaningful when the resolved chart type
    * is `line` or `area`; silently dropped on every other family.
    */
-  dropLines?: boolean | null;
+  dropLines?: boolean | null
   /**
    * Override `SheetChart.hiLowLines`. `undefined` (or omitted) inherits
    * the source's parsed flag; `null` drops the inherited value (the
@@ -771,7 +771,7 @@ export interface CloneChartOptions {
    * is `line`; silently dropped on every other family (`<c:hiLowLines>`
    * has no slot on `<c:areaChart>` per OOXML).
    */
-  hiLowLines?: boolean | null;
+  hiLowLines?: boolean | null
   /**
    * Override `SheetChart.serLines`. `undefined` (or omitted) inherits
    * the source's parsed flag; `null` drops the inherited value (the
@@ -781,14 +781,14 @@ export interface CloneChartOptions {
    * (`<c:serLines>` has no slot on `<c:lineChart>` / `<c:areaChart>` /
    * `<c:pieChart>` / `<c:scatterChart>` per OOXML).
    */
-  serLines?: boolean | null;
+  serLines?: boolean | null
   /**
    * Override `SheetChart.holeSize` (only meaningful for `doughnut`).
    * When the resolved chart type is not `doughnut`, the field is
    * dropped from the output so it does not leak into a cloned pie or
    * column chart.
    */
-  holeSize?: number;
+  holeSize?: number
   /**
    * Override `SheetChart.firstSliceAng` (the pie / doughnut starting
    * angle in degrees, clockwise from 12 o'clock). Only meaningful for
@@ -796,9 +796,9 @@ export interface CloneChartOptions {
    * type is anything else, so a rotation hint inherited from a
    * doughnut template never leaks into a column or scatter clone.
    */
-  firstSliceAng?: number;
+  firstSliceAng?: number
   /** Override `SheetChart.showTitle`. */
-  showTitle?: boolean;
+  showTitle?: boolean
   /**
    * Override the chart-level title-overlay flag. `undefined` (or
    * omitted) inherits the source's parsed value; `null` drops the
@@ -811,7 +811,7 @@ export interface CloneChartOptions {
    * or `showTitle === false`) — there is no `<c:title>` block to host
    * the overlay flag in either case.
    */
-  titleOverlay?: boolean | null;
+  titleOverlay?: boolean | null
   /**
    * Override the chart-level title rotation in whole degrees.
    * `undefined` (or omitted) inherits the source's parsed value;
@@ -829,7 +829,7 @@ export interface CloneChartOptions {
    * or `showTitle === false`) — there is no `<c:title>` block to host
    * the rotation in either case.
    */
-  titleRotation?: number | null;
+  titleRotation?: number | null
   /**
    * Override the chart-level title font size in whole or half points.
    * `undefined` (or omitted) inherits the source's parsed value;
@@ -850,7 +850,7 @@ export interface CloneChartOptions {
    * `titleOverlay` so the chart-level title knobs compose the same
    * way at the call site.
    */
-  titleFontSize?: number | null;
+  titleFontSize?: number | null
   /**
    * Override the chart-level title bold flag.
    * `undefined` (or omitted) inherits the source's parsed value;
@@ -868,7 +868,7 @@ export interface CloneChartOptions {
    * `titleFontSize` / `titleRotation` / `titleOverlay` so the
    * chart-level title knobs compose the same way at the call site.
    */
-  titleBold?: boolean | null;
+  titleBold?: boolean | null
   /**
    * Override the chart-level title italic flag.
    * `undefined` (or omitted) inherits the source's parsed value;
@@ -888,7 +888,7 @@ export interface CloneChartOptions {
    * so the chart-level title knobs compose the same way at the call
    * site.
    */
-  titleItalic?: boolean | null;
+  titleItalic?: boolean | null
   /**
    * Override the chart-level title font color.
    * `undefined` (or omitted) inherits the source's parsed value;
@@ -911,7 +911,7 @@ export interface CloneChartOptions {
    * / `titleOverlay` so the chart-level title knobs compose the same
    * way at the call site.
    */
-  titleColor?: string | null;
+  titleColor?: string | null
   /**
    * Override the chart-level title strikethrough flag.
    * `undefined` (or omitted) inherits the source's parsed `titleStrike`.
@@ -934,7 +934,7 @@ export interface CloneChartOptions {
    * `titleRotation` / `titleOverlay` so the chart-level title knobs
    * compose the same way at the call site.
    */
-  titleStrike?: boolean | null;
+  titleStrike?: boolean | null
   /**
    * Override the chart-level title underline flag.
    * `undefined` (or omitted) inherits the source's parsed `titleUnderline`.
@@ -956,7 +956,7 @@ export interface CloneChartOptions {
    * `titleFontSize` / `titleRotation` / `titleOverlay` so the
    * chart-level title knobs compose the same way at the call site.
    */
-  titleUnderline?: boolean | null;
+  titleUnderline?: boolean | null
   /**
    * Override the chart-level title font family / typeface.
    * `undefined` (or omitted) inherits the source's parsed
@@ -979,7 +979,7 @@ export interface CloneChartOptions {
    * `titleFontSize` / `titleRotation` / `titleOverlay` so the
    * chart-level title knobs compose the same way at the call site.
    */
-  titleFontFamily?: string | null;
+  titleFontFamily?: string | null
   /**
    * Override the chart-level title manual layout. `undefined` (or
    * omitted) inherits the source's parsed `titleLayout`; `null` drops
@@ -1003,7 +1003,7 @@ export interface CloneChartOptions {
    * the chart-level manual-layout knobs compose the same way at the
    * call site.
    */
-  titleLayout?: ChartManualLayout | null;
+  titleLayout?: ChartManualLayout | null
   /**
    * Override `SheetChart.titleFillColor`. `undefined` (or omitted)
    * inherits the source's parsed `titleFillColor`; `null` drops the
@@ -1033,7 +1033,7 @@ export interface CloneChartOptions {
    * two knobs target different children of `<c:title>` so a caller
    * can pin both without conflict.
    */
-  titleFillColor?: string | null;
+  titleFillColor?: string | null
   /**
    * Override `SheetChart.titleBorderColor`. `undefined` (or omitted)
    * inherits the source's parsed `titleBorderColor`; `null` drops the
@@ -1062,7 +1062,7 @@ export interface CloneChartOptions {
    * (`<a:solidFill>` for fill, `<a:ln>` for stroke), and the writer
    * authors a `<c:spPr>` whenever either knob resolves to a value.
    */
-  titleBorderColor?: string | null;
+  titleBorderColor?: string | null
   /**
    * Override `SheetChart.titleBorderWidth`. `undefined` (or omitted)
    * inherits the source's parsed `titleBorderWidth`; `null` drops the
@@ -1091,7 +1091,7 @@ export interface CloneChartOptions {
    * same accept-finite-number / clamp / snap grammar — but on the
    * title's own `<c:spPr>` block.
    */
-  titleBorderWidth?: number | null;
+  titleBorderWidth?: number | null
   /**
    * Override `SheetChart.titleBorderDash`. `undefined` (or omitted)
    * inherits the source's parsed dash; `null` drops the inherited
@@ -1104,7 +1104,7 @@ export interface CloneChartOptions {
    * element. Silently dropped from the cloned `SheetChart` when the
    * resolved chart renders no title.
    */
-  titleBorderDash?: ChartBorderDash | null;
+  titleBorderDash?: ChartBorderDash | null
   /**
    * Override `<c:autoTitleDeleted>` (the "user explicitly deleted the
    * auto-generated title" flag).
@@ -1126,17 +1126,17 @@ export interface CloneChartOptions {
    * `plotVisOnly` so the chart-level title flags compose the same way
    * at the call site.
    */
-  autoTitleDeleted?: boolean | null;
+  autoTitleDeleted?: boolean | null
   /** Override `SheetChart.altText`. */
-  altText?: string;
+  altText?: string
   /** Override `SheetChart.frameTitle`. */
-  frameTitle?: string;
+  frameTitle?: string
   /**
    * Override the chart-level data labels. `undefined` (or omitted)
    * inherits the source's `dataLabels`; `null` drops the inherited
    * block; a `ChartDataLabels` object replaces it.
    */
-  dataLabels?: ChartDataLabels | null;
+  dataLabels?: ChartDataLabels | null
   /**
    * Override how the chart renders missing / blank cells. `undefined`
    * (or omitted) inherits the source's `dispBlanksAs`; `null` drops
@@ -1145,7 +1145,7 @@ export interface CloneChartOptions {
    * when a template uses `"span"` to bridge gaps but the cloned
    * dashboard chart should render the gaps explicitly (or vice versa).
    */
-  dispBlanksAs?: ChartDisplayBlanksAs | null;
+  dispBlanksAs?: ChartDisplayBlanksAs | null
   /**
    * Override `<c:varyColors>` (the per-point unique-color toggle).
    *
@@ -1156,7 +1156,7 @@ export interface CloneChartOptions {
    * a doughnut to a single color (`false`) or painting each bar of a
    * single-series column chart in a different color (`true`).
    */
-  varyColors?: boolean | null;
+  varyColors?: boolean | null
   /**
    * Override `<c:plotVisOnly>` (the "hide hidden cells" toggle).
    *
@@ -1170,7 +1170,7 @@ export interface CloneChartOptions {
    * The grammar mirrors `dispBlanksAs` / `varyColors` so the
    * chart-level toggles compose the same way at the call site.
    */
-  plotVisOnly?: boolean | null;
+  plotVisOnly?: boolean | null
   /**
    * Override `<c:showDLblsOverMax>` (the "show data labels for values
    * over maximum scale" toggle).
@@ -1186,7 +1186,7 @@ export interface CloneChartOptions {
    * The grammar mirrors `plotVisOnly` / `dispBlanksAs` so the
    * chart-level toggles compose the same way at the call site.
    */
-  showDLblsOverMax?: boolean | null;
+  showDLblsOverMax?: boolean | null
   /**
    * Override `<c:roundedCorners>` (the chart-frame rounded-edge toggle).
    *
@@ -1200,7 +1200,7 @@ export interface CloneChartOptions {
    * The grammar mirrors `plotVisOnly` / `varyColors` so the
    * chart-frame toggles compose the same way at the call site.
    */
-  roundedCorners?: boolean | null;
+  roundedCorners?: boolean | null
   /**
    * Override `<c:upDownBars>` (the line-chart up / down bars toggle).
    *
@@ -1218,7 +1218,7 @@ export interface CloneChartOptions {
    * up/down-bars hint never leaks into a column / pie / doughnut /
    * area / scatter clone).
    */
-  upDownBars?: boolean | null;
+  upDownBars?: boolean | null
   /**
    * Override `<c:upDownBars><c:gapWidth val=".."/>` (the gap width
    * between up / down bars on a line chart, as a percentage of the
@@ -1242,7 +1242,7 @@ export interface CloneChartOptions {
    * ({@link upDownBars} / {@link showLineMarkers}) so the chart-level
    * line-bar knobs compose the same way at the call site.
    */
-  upDownBarsGapWidth?: number | null;
+  upDownBarsGapWidth?: number | null
   /**
    * Override `<c:lineChart><c:marker val=".."/>` (the chart-level
    * line-marker visibility toggle).
@@ -1266,7 +1266,7 @@ export interface CloneChartOptions {
    * per-series block then picks the symbol / size / fill that paints
    * when the gate is open.
    */
-  showLineMarkers?: boolean | null;
+  showLineMarkers?: boolean | null
   /**
    * Override `<c:style>` (the built-in chart style preset, 1–48).
    *
@@ -1283,7 +1283,7 @@ export interface CloneChartOptions {
    * `roundedCorners` / `plotVisOnly` so the chart-frame toggles
    * compose the same way at the call site.
    */
-  style?: number | null;
+  style?: number | null
   /**
    * Override `<c:lang>` (the chart-space editing-locale hint).
    *
@@ -1302,7 +1302,7 @@ export interface CloneChartOptions {
    * mirrors `style` so the chart-space toggles compose the same way
    * at the call site.
    */
-  lang?: string | null;
+  lang?: string | null
   /**
    * Override `<c:date1904>` (the chart-space date-system toggle).
    *
@@ -1322,7 +1322,7 @@ export interface CloneChartOptions {
    * `plotVisOnly` so the chart-space toggles compose the same way at
    * the call site.
    */
-  date1904?: boolean | null;
+  date1904?: boolean | null
   /**
    * Override `<c:plotArea><c:dTable>` (the data-table beneath the plot
    * area).
@@ -1349,7 +1349,7 @@ export interface CloneChartOptions {
    * places `<c:dTable>` inside `<c:plotArea>` alongside the axes; pie /
    * doughnut have no axes and no slot for the element.
    */
-  dataTable?: ChartDataTable | boolean | null;
+  dataTable?: ChartDataTable | boolean | null
   /**
    * Override `<c:chartSpace><c:protection>` (the chart-space
    * protection block).
@@ -1372,7 +1372,7 @@ export interface CloneChartOptions {
    * {@link CloneChartOptions.dataTable} so the chart-level block
    * toggles compose the same way at the call site.
    */
-  protection?: ChartProtection | boolean | null;
+  protection?: ChartProtection | boolean | null
   /**
    * Override `<c:chart><c:view3D>` (the 3-D rotation / perspective
    * block).
@@ -1398,7 +1398,7 @@ export interface CloneChartOptions {
    * The grammar mirrors {@link CloneChartOptions.protection} so the
    * chart-level block toggles compose the same way at the call site.
    */
-  view3D?: ChartView3D | null;
+  view3D?: ChartView3D | null
   /**
    * Override `<c:chart><c:floor><c:thickness val="N"/></c:floor>`
    * (the 3-D floor extrusion thickness on `CT_Surface`, ECMA-376
@@ -1423,7 +1423,7 @@ export interface CloneChartOptions {
    * so the chart-level numeric knobs compose the same way at the call
    * site.
    */
-  floorThickness?: number | null;
+  floorThickness?: number | null
   /**
    * Override `<c:chart><c:sideWall><c:thickness val="N"/></c:sideWall>`
    * (the 3-D side-wall extrusion thickness on `CT_Surface`, ECMA-376
@@ -1448,7 +1448,7 @@ export interface CloneChartOptions {
    * {@link CloneChartOptions.upDownBarsGapWidth} so the chart-level
    * numeric knobs compose the same way at the call site.
    */
-  sideWallThickness?: number | null;
+  sideWallThickness?: number | null
   /**
    * Override `<c:chart><c:backWall><c:thickness val="N"/></c:backWall>`
    * (the 3-D back-wall extrusion thickness on `CT_Surface`, ECMA-376
@@ -1472,7 +1472,7 @@ export interface CloneChartOptions {
    * grammar mirrors {@link CloneChartOptions.floorThickness} so the
    * chart-level numeric knobs compose the same way at the call site.
    */
-  backWallThickness?: number | null;
+  backWallThickness?: number | null
   /**
    * Override `<c:scatterStyle>` (the chart-level XY-scatter preset).
    *
@@ -1487,7 +1487,7 @@ export interface CloneChartOptions {
    * since the OOXML schema places `<c:scatterStyle>` exclusively on
    * `<c:scatterChart>`.
    */
-  scatterStyle?: ChartScatterStyle | null;
+  scatterStyle?: ChartScatterStyle | null
   /**
    * Per-axis overrides. Each field accepts a value to replace the
    * source's, or `null` to drop the source value (the cloned chart
@@ -1500,7 +1500,7 @@ export interface CloneChartOptions {
    */
   axes?: {
     x?: {
-      title?: string | null;
+      title?: string | null
       /**
        * Override `SheetChart.axes.x.axisTitleRotation`. `undefined` (or
        * omitted) inherits the source axis's parsed value; `null` drops
@@ -1516,7 +1516,7 @@ export interface CloneChartOptions {
        * whose `title` is unset (no `<c:title>` block to host the
        * rotation).
        */
-      axisTitleRotation?: number | null;
+      axisTitleRotation?: number | null
       /**
        * Override `SheetChart.axes.x.axisTitleFontSize`. `undefined`
        * (or omitted) inherits the source axis's parsed value; `null`
@@ -1534,7 +1534,7 @@ export interface CloneChartOptions {
        * any axis whose `title` is unset (no `<c:title>` block to
        * host the size).
        */
-      axisTitleFontSize?: number | null;
+      axisTitleFontSize?: number | null
       /**
        * Override `SheetChart.axes.x.axisTitleBold`. `undefined` (or
        * omitted) inherits the source axis's parsed flag; `null` drops
@@ -1553,7 +1553,7 @@ export interface CloneChartOptions {
        * whose `title` is unset (no `<c:title>` block to host the
        * flag).
        */
-      axisTitleBold?: boolean | null;
+      axisTitleBold?: boolean | null
       /**
        * Override `SheetChart.axes.x.axisTitleItalic`. `undefined` (or
        * omitted) inherits the source axis's parsed value; `null` drops
@@ -1571,7 +1571,7 @@ export interface CloneChartOptions {
        * any axis whose `title` is unset (no `<c:title>` block to
        * host the flag).
        */
-      axisTitleItalic?: boolean | null;
+      axisTitleItalic?: boolean | null
       /**
        * Override `SheetChart.axes.x.axisTitleColor`. `undefined` (or
        * omitted) inherits the source axis's parsed value; `null` drops
@@ -1594,7 +1594,7 @@ export interface CloneChartOptions {
        * `axisTitleFontSize` / `axisTitleBold` / `axisTitleItalic` so
        * the axis-title knobs compose the same way at the call site.
        */
-      axisTitleColor?: string | null;
+      axisTitleColor?: string | null
       /**
        * Override `SheetChart.axes.x.axisTitleStrike`. `undefined` (or
        * omitted) inherits the source axis's parsed value; `null` drops
@@ -1619,7 +1619,7 @@ export interface CloneChartOptions {
        * `axisTitleColor` so the axis-title knobs compose the same way
        * at the call site.
        */
-      axisTitleStrike?: boolean | null;
+      axisTitleStrike?: boolean | null
       /**
        * Override `SheetChart.axes.x.axisTitleUnderline`. `undefined`
        * (or omitted) inherits the source axis's parsed value; `null`
@@ -1643,7 +1643,7 @@ export interface CloneChartOptions {
        * `axisTitleColor` / `axisTitleStrike` so the axis-title knobs
        * compose the same way at the call site.
        */
-      axisTitleUnderline?: boolean | null;
+      axisTitleUnderline?: boolean | null
       /**
        * Override `SheetChart.axes.x.axisTitleFontFamily`. `undefined`
        * (or omitted) inherits the source axis's parsed typeface;
@@ -1669,7 +1669,7 @@ export interface CloneChartOptions {
        * `axisTitleUnderline` so the axis-title knobs compose the
        * same way at the call site.
        */
-      axisTitleFontFamily?: string | null;
+      axisTitleFontFamily?: string | null
       /**
        * Override `SheetChart.axes.x.axisTitleOverlay`. `undefined`
        * (or omitted) inherits the source axis's parsed value; `null`
@@ -1690,7 +1690,7 @@ export interface CloneChartOptions {
        * `axisTitleFontFamily`) so the axis-title knobs compose the
        * same way at the call site.
        */
-      axisTitleOverlay?: boolean | null;
+      axisTitleOverlay?: boolean | null
       /**
        * Override `SheetChart.axes.x.axisTitleLayout`. `undefined` (or
        * omitted) inherits the source axis's parsed `axisTitleLayout`;
@@ -1715,7 +1715,7 @@ export interface CloneChartOptions {
        * `legendLayout` / `plotAreaLayout` so the four manual-layout
        * knobs compose the same way at the call site.
        */
-      axisTitleLayout?: ChartManualLayout | null;
+      axisTitleLayout?: ChartManualLayout | null
       /**
        * Override `SheetChart.axes.x.axisTitleFillColor`. `undefined`
        * (or omitted) inherits the source axis's parsed value; `null`
@@ -1743,7 +1743,7 @@ export interface CloneChartOptions {
        * and either axis title without bookkeeping the canonical OOXML
        * slots.
        */
-      axisTitleFillColor?: string | null;
+      axisTitleFillColor?: string | null
       /**
        * Override `SheetChart.axes.x.axisTitleBorderColor`. `undefined`
        * (or omitted) inherits the source axis's parsed value; `null`
@@ -1774,7 +1774,7 @@ export interface CloneChartOptions {
        * chart title and either axis title without bookkeeping the
        * canonical OOXML slots.
        */
-      axisTitleBorderColor?: string | null;
+      axisTitleBorderColor?: string | null
       /**
        * Override `SheetChart.axes.x.axisTitleBorderWidth`. Same
        * `undefined` / `null` / number grammar as the chart-level
@@ -1784,7 +1784,7 @@ export interface CloneChartOptions {
        * `undefined`. Silently dropped on `pie` / `doughnut` charts
        * (no axes) and on any axis whose `title` is unset.
        */
-      axisTitleBorderWidth?: number | null;
+      axisTitleBorderWidth?: number | null
       /**
        * Override `SheetChart.axes.x.axisTitleBorderDash`. Same
        * `undefined` / `null` / value grammar as the chart-level
@@ -1792,31 +1792,31 @@ export interface CloneChartOptions {
        * collapse to `undefined`. Silently dropped on `pie` /
        * `doughnut` charts and on any axis whose `title` is unset.
        */
-      axisTitleBorderDash?: ChartBorderDash | null;
-      gridlines?: ChartAxisGridlines | null;
-      scale?: ChartAxisScale | null;
-      numberFormat?: ChartAxisNumberFormat | null;
+      axisTitleBorderDash?: ChartBorderDash | null
+      gridlines?: ChartAxisGridlines | null
+      scale?: ChartAxisScale | null
+      numberFormat?: ChartAxisNumberFormat | null
       /**
        * Override the major tick-mark style. `undefined` (or omitted)
        * inherits the source axis' parsed value; `null` drops it (the
        * writer falls back to the OOXML default `"out"`); a value
        * replaces it.
        */
-      majorTickMark?: ChartAxisTickMark | null;
+      majorTickMark?: ChartAxisTickMark | null
       /**
        * Override the minor tick-mark style. `undefined` (or omitted)
        * inherits the source axis' parsed value; `null` drops it (the
        * writer falls back to the OOXML default `"none"`); a value
        * replaces it.
        */
-      minorTickMark?: ChartAxisTickMark | null;
+      minorTickMark?: ChartAxisTickMark | null
       /**
        * Override the tick-label position. `undefined` (or omitted)
        * inherits the source axis' parsed value; `null` drops it (the
        * writer falls back to the OOXML default `"nextTo"`); a value
        * replaces it.
        */
-      tickLblPos?: ChartAxisTickLabelPosition | null;
+      tickLblPos?: ChartAxisTickLabelPosition | null
       /**
        * Override `SheetChart.axes.x.labelRotation`. `undefined` (or
        * omitted) inherits the source axis's rotation; `null` drops the
@@ -1829,7 +1829,7 @@ export interface CloneChartOptions {
        * (bar / column / line / area / scatter). Silently dropped on
        * `pie` / `doughnut` charts since neither has axes.
        */
-      labelRotation?: number | null;
+      labelRotation?: number | null
       /**
        * Override `SheetChart.axes.x.labelFontSize`. `undefined` (or
        * omitted) inherits the source axis's tick-label font size;
@@ -1846,7 +1846,7 @@ export interface CloneChartOptions {
        * independently with {@link labelRotation}: both fields land on
        * the same `<c:txPr>` body.
        */
-      labelFontSize?: number | null;
+      labelFontSize?: number | null
       /**
        * Override `SheetChart.axes.x.labelBold`. `undefined` (or
        * omitted) inherits the source axis's tick-label bold flag;
@@ -1865,7 +1865,7 @@ export interface CloneChartOptions {
        * independently with {@link labelRotation} / {@link labelFontSize}:
        * all three knobs land on the same `<c:txPr>` body.
        */
-      labelBold?: boolean | null;
+      labelBold?: boolean | null
       /**
        * Override `SheetChart.axes.x.labelItalic`. `undefined` (or
        * omitted) inherits the source axis's tick-label italic flag;
@@ -1884,7 +1884,7 @@ export interface CloneChartOptions {
        * independently with {@link labelRotation} / {@link labelFontSize} /
        * {@link labelBold}: all four knobs land on the same `<c:txPr>` body.
        */
-      labelItalic?: boolean | null;
+      labelItalic?: boolean | null
       /**
        * Override `SheetChart.axes.x.labelColor`. `undefined` (or
        * omitted) inherits the source axis's tick-label color;
@@ -1907,7 +1907,7 @@ export interface CloneChartOptions {
        * {@link labelBold} / {@link labelItalic}: all five knobs land
        * on the same `<c:txPr>` body.
        */
-      labelColor?: string | null;
+      labelColor?: string | null
       /**
        * Override `SheetChart.axes.x.labelUnderline`. `undefined` (or
        * omitted) inherits the source axis's tick-label underline flag;
@@ -1927,7 +1927,7 @@ export interface CloneChartOptions {
        * {@link labelBold} / {@link labelItalic} / {@link labelColor}:
        * all six knobs land on the same `<c:txPr>` body.
        */
-      labelUnderline?: boolean | null;
+      labelUnderline?: boolean | null
       /**
        * Override `SheetChart.axes.x.labelStrike`. `undefined` (or
        * omitted) inherits the source axis's tick-label strikethrough
@@ -1948,7 +1948,7 @@ export interface CloneChartOptions {
        * {@link labelUnderline}: all seven knobs land on the same
        * `<c:txPr>` body.
        */
-      labelStrike?: boolean | null;
+      labelStrike?: boolean | null
       /**
        * Override `SheetChart.axes.x.labelFontFamily`. `undefined` (or
        * omitted) inherits the source axis's tick-label typeface;
@@ -1971,14 +1971,14 @@ export interface CloneChartOptions {
        * {@link labelUnderline} / {@link labelStrike}: all eight knobs
        * land on the same `<c:txPr>` body.
        */
-      labelFontFamily?: string | null;
+      labelFontFamily?: string | null
       /**
        * Override the reverse-axis flag. `undefined` (or omitted)
        * inherits the source axis' parsed value; `null` drops it (the
        * writer falls back to the OOXML default `"minMax"` — forward
        * orientation); `true` reverses, `false` forces forward.
        */
-      reverse?: boolean | null;
+      reverse?: boolean | null
       /**
        * Override `SheetChart.axes.x.tickLblSkip`. `undefined` (or
        * omitted) inherits the source axis's skip; `null` drops the
@@ -1987,12 +1987,12 @@ export interface CloneChartOptions {
        * chart types whose X axis is `<c:catAx>` (bar / column / line
        * / area); silently dropped on scatter and pie / doughnut.
        */
-      tickLblSkip?: number | null;
+      tickLblSkip?: number | null
       /**
        * Override `SheetChart.axes.x.tickMarkSkip`. Same grammar and
        * scope rules as {@link tickLblSkip}.
        */
-      tickMarkSkip?: number | null;
+      tickMarkSkip?: number | null
       /**
        * Override `SheetChart.axes.x.lblOffset`. `undefined` (or
        * omitted) inherits the source axis's label offset; `null`
@@ -2002,7 +2002,7 @@ export interface CloneChartOptions {
        * `<c:catAx>` (bar / column / line / area); silently dropped
        * on scatter and pie / doughnut.
        */
-      lblOffset?: number | null;
+      lblOffset?: number | null
       /**
        * Override `SheetChart.axes.x.lblAlgn`. `undefined` (or
        * omitted) inherits the source axis's label alignment; `null`
@@ -2014,7 +2014,7 @@ export interface CloneChartOptions {
        * `<c:catAx>` (bar / column / line / area); silently dropped
        * on scatter and pie / doughnut.
        */
-      lblAlgn?: ChartAxisLabelAlign | null;
+      lblAlgn?: ChartAxisLabelAlign | null
       /**
        * Override `SheetChart.axes.x.noMultiLvlLbl`. `undefined` (or
        * omitted) inherits the source axis's flag; `null` drops the
@@ -2024,7 +2024,7 @@ export interface CloneChartOptions {
        * `<c:catAx>` (bar / column / line / area); silently dropped on
        * scatter and pie / doughnut.
        */
-      noMultiLvlLbl?: boolean | null;
+      noMultiLvlLbl?: boolean | null
       /**
        * Override `SheetChart.axes.x.auto`. `undefined` (or omitted)
        * inherits the source axis's flag; `null` drops the inherited
@@ -2039,7 +2039,7 @@ export interface CloneChartOptions {
        * `<c:catAx>` (bar / column / line / area); silently dropped on
        * scatter and pie / doughnut.
        */
-      auto?: boolean | null;
+      auto?: boolean | null
       /**
        * Override `SheetChart.axes.x.hidden`. `undefined` (or omitted)
        * inherits the source axis's flag; `null` drops the inherited
@@ -2051,7 +2051,7 @@ export interface CloneChartOptions {
        * Silently dropped when the resolved chart type is `pie` /
        * `doughnut` since neither has axes.
        */
-      hidden?: boolean | null;
+      hidden?: boolean | null
       /**
        * Override `SheetChart.axes.x.crosses`. `undefined` (or omitted)
        * inherits the source axis's semantic crossing pin; `null` drops
@@ -2064,7 +2064,7 @@ export interface CloneChartOptions {
        * XSD choice. Silently dropped on `pie` / `doughnut` charts since
        * neither has axes.
        */
-      crosses?: ChartAxisCrosses | null;
+      crosses?: ChartAxisCrosses | null
       /**
        * Override `SheetChart.axes.x.crossesAt`. `undefined` (or omitted)
        * inherits the source axis's numeric crossing pin; `null` drops
@@ -2077,7 +2077,7 @@ export interface CloneChartOptions {
        * OOXML schema places `<c:crosses>` and `<c:crossesAt>` in an XSD
        * choice — only one may legally appear at a time.
        */
-      crossesAt?: number | null;
+      crossesAt?: number | null
       /**
        * Override `SheetChart.axes.x.dispUnits`. `undefined` (or omitted)
        * inherits the source axis's parsed display-unit preset; `null`
@@ -2094,7 +2094,7 @@ export interface CloneChartOptions {
        * so a stale hint never leaks into the writer. Pie / doughnut
        * have no axes at all.
        */
-      dispUnits?: ChartAxisDispUnits | ChartAxisDispUnit | null;
+      dispUnits?: ChartAxisDispUnits | ChartAxisDispUnit | null
       /**
        * Override `SheetChart.axes.x.crossBetween`. `undefined` (or
        * omitted) inherits the source axis's parsed cross-between mode;
@@ -2111,71 +2111,71 @@ export interface CloneChartOptions {
        * `undefined` on those families so a stale hint never leaks into
        * the writer. Pie / doughnut have no axes at all.
        */
-      crossBetween?: ChartAxisCrossBetween | null;
-    };
+      crossBetween?: ChartAxisCrossBetween | null
+    }
     y?: {
-      title?: string | null;
+      title?: string | null
       /** See {@link CloneChartOptions.axes.x.axisTitleRotation}. */
-      axisTitleRotation?: number | null;
+      axisTitleRotation?: number | null
       /** See {@link CloneChartOptions.axes.x.axisTitleFontSize}. */
-      axisTitleFontSize?: number | null;
+      axisTitleFontSize?: number | null
       /** See {@link CloneChartOptions.axes.x.axisTitleBold}. */
-      axisTitleBold?: boolean | null;
+      axisTitleBold?: boolean | null
       /** See {@link CloneChartOptions.axes.x.axisTitleItalic}. */
-      axisTitleItalic?: boolean | null;
+      axisTitleItalic?: boolean | null
       /** See {@link CloneChartOptions.axes.x.axisTitleColor}. */
-      axisTitleColor?: string | null;
+      axisTitleColor?: string | null
       /** See {@link CloneChartOptions.axes.x.axisTitleStrike}. */
-      axisTitleStrike?: boolean | null;
+      axisTitleStrike?: boolean | null
       /** See {@link CloneChartOptions.axes.x.axisTitleUnderline}. */
-      axisTitleUnderline?: boolean | null;
+      axisTitleUnderline?: boolean | null
       /** See {@link CloneChartOptions.axes.x.axisTitleFontFamily}. */
-      axisTitleFontFamily?: string | null;
+      axisTitleFontFamily?: string | null
       /** See {@link CloneChartOptions.axes.x.axisTitleOverlay}. */
-      axisTitleOverlay?: boolean | null;
+      axisTitleOverlay?: boolean | null
       /** See {@link CloneChartOptions.axes.x.axisTitleLayout}. */
-      axisTitleLayout?: ChartManualLayout | null;
+      axisTitleLayout?: ChartManualLayout | null
       /** See {@link CloneChartOptions.axes.x.axisTitleFillColor}. */
-      axisTitleFillColor?: string | null;
+      axisTitleFillColor?: string | null
       /** See {@link CloneChartOptions.axes.x.axisTitleBorderColor}. */
-      axisTitleBorderColor?: string | null;
+      axisTitleBorderColor?: string | null
       /** See {@link CloneChartOptions.axes.x.axisTitleBorderWidth}. */
-      axisTitleBorderWidth?: number | null;
+      axisTitleBorderWidth?: number | null
       /** See {@link CloneChartOptions.axes.x.axisTitleBorderDash}. */
-      axisTitleBorderDash?: ChartBorderDash | null;
-      gridlines?: ChartAxisGridlines | null;
-      scale?: ChartAxisScale | null;
-      numberFormat?: ChartAxisNumberFormat | null;
+      axisTitleBorderDash?: ChartBorderDash | null
+      gridlines?: ChartAxisGridlines | null
+      scale?: ChartAxisScale | null
+      numberFormat?: ChartAxisNumberFormat | null
       /** See {@link CloneChartOptions.axes.x.majorTickMark}. */
-      majorTickMark?: ChartAxisTickMark | null;
+      majorTickMark?: ChartAxisTickMark | null
       /** See {@link CloneChartOptions.axes.x.minorTickMark}. */
-      minorTickMark?: ChartAxisTickMark | null;
+      minorTickMark?: ChartAxisTickMark | null
       /** See {@link CloneChartOptions.axes.x.tickLblPos}. */
-      tickLblPos?: ChartAxisTickLabelPosition | null;
+      tickLblPos?: ChartAxisTickLabelPosition | null
       /** See {@link CloneChartOptions.axes.x.labelRotation}. */
-      labelRotation?: number | null;
+      labelRotation?: number | null
       /** See {@link CloneChartOptions.axes.x.labelFontSize}. */
-      labelFontSize?: number | null;
+      labelFontSize?: number | null
       /** See {@link CloneChartOptions.axes.x.labelBold}. */
-      labelBold?: boolean | null;
+      labelBold?: boolean | null
       /** See {@link CloneChartOptions.axes.x.labelItalic}. */
-      labelItalic?: boolean | null;
+      labelItalic?: boolean | null
       /** See {@link CloneChartOptions.axes.x.labelColor}. */
-      labelColor?: string | null;
+      labelColor?: string | null
       /** See {@link CloneChartOptions.axes.x.labelUnderline}. */
-      labelUnderline?: boolean | null;
+      labelUnderline?: boolean | null
       /** See {@link CloneChartOptions.axes.x.labelStrike}. */
-      labelStrike?: boolean | null;
+      labelStrike?: boolean | null
       /** See {@link CloneChartOptions.axes.x.labelFontFamily}. */
-      labelFontFamily?: string | null;
+      labelFontFamily?: string | null
       /** See {@link CloneChartOptions.axes.x.hidden}. */
-      hidden?: boolean | null;
+      hidden?: boolean | null
       /** See {@link CloneChartOptions.axes.x.reverse}. */
-      reverse?: boolean | null;
+      reverse?: boolean | null
       /** See {@link CloneChartOptions.axes.x.crosses}. */
-      crosses?: ChartAxisCrosses | null;
+      crosses?: ChartAxisCrosses | null
       /** See {@link CloneChartOptions.axes.x.crossesAt}. */
-      crossesAt?: number | null;
+      crossesAt?: number | null
       /**
        * Override `SheetChart.axes.y.dispUnits`. Same `undefined` /
        * `null` / replace grammar as
@@ -2187,7 +2187,7 @@ export interface CloneChartOptions {
        * axes at all and the resolver collapses the field to `undefined`
        * on those types.
        */
-      dispUnits?: ChartAxisDispUnits | ChartAxisDispUnit | null;
+      dispUnits?: ChartAxisDispUnits | ChartAxisDispUnit | null
       /**
        * Override `SheetChart.axes.y.crossBetween`. Same `undefined`
        * (inherit) / `null` (drop) / replace grammar as
@@ -2199,9 +2199,9 @@ export interface CloneChartOptions {
        * all and the resolver collapses the field to `undefined` on
        * those types.
        */
-      crossBetween?: ChartAxisCrossBetween | null;
-    };
-  };
+      crossBetween?: ChartAxisCrossBetween | null
+    }
+  }
 }
 
 /**
@@ -2229,21 +2229,21 @@ export interface CloneChartOptions {
  */
 export function cloneChart(source: Chart, options: CloneChartOptions): SheetChart {
   if (!options || !options.anchor) {
-    throw new Error("cloneChart: options.anchor is required");
+    throw new Error("cloneChart: options.anchor is required")
   }
 
-  const type = options.type ?? pickWritableKind(source);
+  const type = options.type ?? pickWritableKind(source)
 
   // Pick a base title: explicit override (including `null` meaning drop)
   // wins over the source's title.
-  const title = resolveTitle(source.title, options.title);
+  const title = resolveTitle(source.title, options.title)
 
   // Build the series array.
-  let series: ChartSeries[];
+  let series: ChartSeries[]
   if (options.series) {
-    series = options.series.map((s) => ({ ...s }));
+    series = options.series.map((s) => ({ ...s }))
   } else {
-    series = buildSeriesFromSource(source, options.seriesOverrides);
+    series = buildSeriesFromSource(source, options.seriesOverrides)
   }
 
   // `<c:smooth>`, `<a:ln>` (stroke), and `<c:marker>` all render
@@ -2253,9 +2253,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // rejects them.
   if (type !== "line" && type !== "scatter") {
     for (const s of series) {
-      if (s.smooth !== undefined) delete s.smooth;
-      if (s.stroke !== undefined) delete s.stroke;
-      if (s.marker !== undefined) delete s.marker;
+      if (s.smooth !== undefined) delete s.smooth
+      if (s.stroke !== undefined) delete s.stroke
+      if (s.marker !== undefined) delete s.marker
     }
   }
 
@@ -2265,7 +2265,7 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // does not leak the flag into a chart kind whose schema rejects it.
   if (type !== "bar" && type !== "column") {
     for (const s of series) {
-      if (s.invertIfNegative !== undefined) delete s.invertIfNegative;
+      if (s.invertIfNegative !== undefined) delete s.invertIfNegative
     }
   }
 
@@ -2276,7 +2276,7 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // chart kind whose schema rejects it.
   if (type !== "pie" && type !== "doughnut") {
     for (const s of series) {
-      if (s.explosion !== undefined) delete s.explosion;
+      if (s.explosion !== undefined) delete s.explosion
     }
   }
 
@@ -2287,8 +2287,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // arrays into the cloned chart.
   if (type === "pie" || type === "doughnut") {
     for (const s of series) {
-      if (s.trendlines !== undefined) delete s.trendlines;
-      if (s.errorBars !== undefined) delete s.errorBars;
+      if (s.trendlines !== undefined) delete s.trendlines
+      if (s.errorBars !== undefined) delete s.errorBars
     }
   }
 
@@ -2301,30 +2301,30 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // chart kind cannot host them.
   if (type !== "bar" && type !== "column") {
     for (const s of series) {
-      if (s.shape3D !== undefined) delete s.shape3D;
+      if (s.shape3D !== undefined) delete s.shape3D
     }
   }
 
   if (series.length === 0) {
     throw new Error(
       "cloneChart: produced 0 series; pass `series` or ensure the source has at least one series with a valuesRef",
-    );
+    )
   }
 
   const out: SheetChart = {
     type,
     series,
     anchor: options.anchor,
-  };
-  if (title !== undefined) out.title = title;
+  }
+  if (title !== undefined) out.title = title
 
   // Legend / per-family grouping carry over from the source when the
   // caller does not supply an override. Each grouping only round-trips
   // for the matching target family — applying a stacked grouping to a
   // family that does not support it would be silently ignored by the
   // writer, so we drop the inherited value to keep the model honest.
-  const legend = options.legend !== undefined ? options.legend : source.legend;
-  if (legend !== undefined) out.legend = legend;
+  const legend = options.legend !== undefined ? options.legend : source.legend
+  if (legend !== undefined) out.legend = legend
 
   // `legendOverlay` only renders inside `<c:legend>`, so a clone whose
   // resolved legend is `false` (legend hidden) drops the inherited
@@ -2335,8 +2335,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendOverlay = resolveCloneLegendOverlay(
       source.legendOverlay,
       options.legendOverlay,
-    );
-    if (resolvedLegendOverlay !== undefined) out.legendOverlay = resolvedLegendOverlay;
+    )
+    if (resolvedLegendOverlay !== undefined) out.legendOverlay = resolvedLegendOverlay
 
     // `<c:legendEntry>` lives inside `<c:legend>`, so the same hidden /
     // missing-legend scoping that drops `legendOverlay` also drops the
@@ -2347,8 +2347,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendEntries = resolveCloneLegendEntries(
       source.legendEntries,
       options.legendEntries,
-    );
-    if (resolvedLegendEntries !== undefined) out.legendEntries = resolvedLegendEntries;
+    )
+    if (resolvedLegendEntries !== undefined) out.legendEntries = resolvedLegendEntries
 
     // `<c:txPr>` only renders inside `<c:legend>`, so the same hidden /
     // missing-legend scoping that drops `legendOverlay` /
@@ -2361,40 +2361,37 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendFontSize = resolveCloneLegendFontSize(
       source.legendFontSize,
       options.legendFontSize,
-    );
-    if (resolvedLegendFontSize !== undefined) out.legendFontSize = resolvedLegendFontSize;
+    )
+    if (resolvedLegendFontSize !== undefined) out.legendFontSize = resolvedLegendFontSize
 
     // Same hidden-legend scoping for the bold flag: the writer has no
     // `<c:txPr>` slot to populate when the legend is hidden. Mirrors the
     // `titleBold` / `axisTitleBold` grammar: `undefined` inherits
     // (after running through the boolean normalizer), `null` drops it
     // (the writer emits no `<c:txPr>` block), a `boolean` replaces.
-    const resolvedLegendBold = resolveCloneLegendBold(source.legendBold, options.legendBold);
-    if (resolvedLegendBold !== undefined) out.legendBold = resolvedLegendBold;
+    const resolvedLegendBold = resolveCloneLegendBold(source.legendBold, options.legendBold)
+    if (resolvedLegendBold !== undefined) out.legendBold = resolvedLegendBold
 
     // Same hidden-legend scoping for the italic flag: `undefined`
     // inherits (after the boolean normalizer), `null` drops, a
     // `boolean` replaces.
-    const resolvedLegendItalic = resolveCloneLegendItalic(
-      source.legendItalic,
-      options.legendItalic,
-    );
-    if (resolvedLegendItalic !== undefined) out.legendItalic = resolvedLegendItalic;
+    const resolvedLegendItalic = resolveCloneLegendItalic(source.legendItalic, options.legendItalic)
+    if (resolvedLegendItalic !== undefined) out.legendItalic = resolvedLegendItalic
 
     // Same hidden-legend scoping for the underline flag.
     const resolvedLegendUnderline = resolveCloneLegendUnderline(
       source.legendUnderline,
       options.legendUnderline,
-    );
-    if (resolvedLegendUnderline !== undefined) out.legendUnderline = resolvedLegendUnderline;
+    )
+    if (resolvedLegendUnderline !== undefined) out.legendUnderline = resolvedLegendUnderline
 
     // Same hidden-legend scoping for the strikethrough flag.
     const resolvedLegendStrikethrough = resolveCloneLegendStrikethrough(
       source.legendStrikethrough,
       options.legendStrikethrough,
-    );
+    )
     if (resolvedLegendStrikethrough !== undefined) {
-      out.legendStrikethrough = resolvedLegendStrikethrough;
+      out.legendStrikethrough = resolvedLegendStrikethrough
     }
 
     // Same hidden-legend scoping for the font color — `<c:txPr>` is
@@ -2403,8 +2400,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendFontColor = resolveCloneLegendFontColor(
       source.legendFontColor,
       options.legendFontColor,
-    );
-    if (resolvedLegendFontColor !== undefined) out.legendFontColor = resolvedLegendFontColor;
+    )
+    if (resolvedLegendFontColor !== undefined) out.legendFontColor = resolvedLegendFontColor
 
     // Same hidden-legend scoping for the font family — `<c:txPr>` is
     // the shared host element. `undefined` inherits, `null` drops, a
@@ -2414,8 +2411,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendFontFamily = resolveCloneLegendFontFamily(
       source.legendFontFamily,
       options.legendFontFamily,
-    );
-    if (resolvedLegendFontFamily !== undefined) out.legendFontFamily = resolvedLegendFontFamily;
+    )
+    if (resolvedLegendFontFamily !== undefined) out.legendFontFamily = resolvedLegendFontFamily
 
     // Same hidden-legend scoping for the manual layout — `<c:layout>`
     // lives inside `<c:legend>` per CT_Legend, so a clone whose legend
@@ -2426,11 +2423,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // `ChartManualLayout` replaces it. An override whose every
     // coordinate dropped on normalization collapses the entire layout
     // to `undefined` so the writer skips the `<c:layout>` block.
-    const resolvedLegendLayout = resolveCloneLegendLayout(
-      source.legendLayout,
-      options.legendLayout,
-    );
-    if (resolvedLegendLayout !== undefined) out.legendLayout = resolvedLegendLayout;
+    const resolvedLegendLayout = resolveCloneLegendLayout(source.legendLayout, options.legendLayout)
+    if (resolvedLegendLayout !== undefined) out.legendLayout = resolvedLegendLayout
 
     // Same hidden-legend scoping for the background fill — `<c:spPr>`
     // is a direct child of `<c:legend>` per CT_Legend, so a clone whose
@@ -2445,8 +2439,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendFillColor = resolveCloneLegendFillColor(
       source.legendFillColor,
       options.legendFillColor,
-    );
-    if (resolvedLegendFillColor !== undefined) out.legendFillColor = resolvedLegendFillColor;
+    )
+    if (resolvedLegendFillColor !== undefined) out.legendFillColor = resolvedLegendFillColor
 
     // Same hidden-legend scoping for the border (line) stroke —
     // `<a:ln>` lives inside `<c:legend><c:spPr>` per CT_ShapeProperties,
@@ -2462,9 +2456,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendBorderColor = resolveCloneLegendBorderColor(
       source.legendBorderColor,
       options.legendBorderColor,
-    );
+    )
     if (resolvedLegendBorderColor !== undefined) {
-      out.legendBorderColor = resolvedLegendBorderColor;
+      out.legendBorderColor = resolvedLegendBorderColor
     }
 
     // Same hidden-legend scoping for the border (line) stroke width —
@@ -2483,9 +2477,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendBorderWidth = resolveCloneLegendBorderWidth(
       source.legendBorderWidth,
       options.legendBorderWidth,
-    );
+    )
     if (resolvedLegendBorderWidth !== undefined) {
-      out.legendBorderWidth = resolvedLegendBorderWidth;
+      out.legendBorderWidth = resolvedLegendBorderWidth
     }
 
     // Legend border preset dash pattern — same hidden-legend scoping
@@ -2493,9 +2487,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedLegendBorderDash = resolveBorderDash(
       source.legendBorderDash,
       options.legendBorderDash,
-    );
+    )
     if (resolvedLegendBorderDash !== undefined) {
-      out.legendBorderDash = resolvedLegendBorderDash;
+      out.legendBorderDash = resolvedLegendBorderDash
     }
   }
 
@@ -2511,8 +2505,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedPlotAreaLayout = resolveClonePlotAreaLayout(
     source.plotAreaLayout,
     options.plotAreaLayout,
-  );
-  if (resolvedPlotAreaLayout !== undefined) out.plotAreaLayout = resolvedPlotAreaLayout;
+  )
+  if (resolvedPlotAreaLayout !== undefined) out.plotAreaLayout = resolvedPlotAreaLayout
 
   // Plot-area solid fill color is independent of the legend / title
   // visibility — every chart has a `<c:plotArea>` element to host the
@@ -2527,8 +2521,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedPlotAreaFillColor = resolveClonePlotAreaFillColor(
     source.plotAreaFillColor,
     options.plotAreaFillColor,
-  );
-  if (resolvedPlotAreaFillColor !== undefined) out.plotAreaFillColor = resolvedPlotAreaFillColor;
+  )
+  if (resolvedPlotAreaFillColor !== undefined) out.plotAreaFillColor = resolvedPlotAreaFillColor
 
   // Plot-area border (stroke) color is independent of the fill — every
   // chart has a `<c:plotArea>` element to host the `<c:spPr><a:ln>`
@@ -2543,9 +2537,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedPlotAreaBorderColor = resolveClonePlotAreaBorderColor(
     source.plotAreaBorderColor,
     options.plotAreaBorderColor,
-  );
+  )
   if (resolvedPlotAreaBorderColor !== undefined) {
-    out.plotAreaBorderColor = resolvedPlotAreaBorderColor;
+    out.plotAreaBorderColor = resolvedPlotAreaBorderColor
   }
 
   // Plot-area border thickness composes independently with the border
@@ -2560,9 +2554,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedPlotAreaBorderWidth = resolveClonePlotAreaBorderWidth(
     source.plotAreaBorderWidth,
     options.plotAreaBorderWidth,
-  );
+  )
   if (resolvedPlotAreaBorderWidth !== undefined) {
-    out.plotAreaBorderWidth = resolvedPlotAreaBorderWidth;
+    out.plotAreaBorderWidth = resolvedPlotAreaBorderWidth
   }
 
   // Plot-area border preset dash pattern. Same `<a:ln>` host as the
@@ -2572,9 +2566,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedPlotAreaBorderDash = resolveBorderDash(
     source.plotAreaBorderDash,
     options.plotAreaBorderDash,
-  );
+  )
   if (resolvedPlotAreaBorderDash !== undefined) {
-    out.plotAreaBorderDash = resolvedPlotAreaBorderDash;
+    out.plotAreaBorderDash = resolvedPlotAreaBorderDash
   }
 
   // Chart-space solid fill color is independent of every visibility
@@ -2593,9 +2587,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedChartSpaceFillColor = resolveCloneChartSpaceFillColor(
     source.chartSpaceFillColor,
     options.chartSpaceFillColor,
-  );
+  )
   if (resolvedChartSpaceFillColor !== undefined) {
-    out.chartSpaceFillColor = resolvedChartSpaceFillColor;
+    out.chartSpaceFillColor = resolvedChartSpaceFillColor
   }
 
   // Chart-space border (stroke) color is independent of every visibility
@@ -2612,9 +2606,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedChartSpaceBorderColor = resolveCloneChartSpaceBorderColor(
     source.chartSpaceBorderColor,
     options.chartSpaceBorderColor,
-  );
+  )
   if (resolvedChartSpaceBorderColor !== undefined) {
-    out.chartSpaceBorderColor = resolvedChartSpaceBorderColor;
+    out.chartSpaceBorderColor = resolvedChartSpaceBorderColor
   }
 
   // Chart-space border (stroke) thickness shares the same `<a:ln>`
@@ -2629,9 +2623,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedChartSpaceBorderWidth = resolveBorderWidthPt(
     source.chartSpaceBorderWidth,
     options.chartSpaceBorderWidth,
-  );
+  )
   if (resolvedChartSpaceBorderWidth !== undefined) {
-    out.chartSpaceBorderWidth = resolvedChartSpaceBorderWidth;
+    out.chartSpaceBorderWidth = resolvedChartSpaceBorderWidth
   }
 
   // Chart-space border preset dash pattern. Same `<a:ln>` host as the
@@ -2641,14 +2635,14 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedChartSpaceBorderDash = resolveBorderDash(
     source.chartSpaceBorderDash,
     options.chartSpaceBorderDash,
-  );
+  )
   if (resolvedChartSpaceBorderDash !== undefined) {
-    out.chartSpaceBorderDash = resolvedChartSpaceBorderDash;
+    out.chartSpaceBorderDash = resolvedChartSpaceBorderDash
   }
 
-  const barGrouping = options.barGrouping !== undefined ? options.barGrouping : source.barGrouping;
+  const barGrouping = options.barGrouping !== undefined ? options.barGrouping : source.barGrouping
   if (barGrouping !== undefined && (type === "bar" || type === "column")) {
-    out.barGrouping = barGrouping;
+    out.barGrouping = barGrouping
   }
 
   // Bar / column gap width and overlap only make sense on bar-family
@@ -2657,22 +2651,22 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // has no `<c:barChart>` element to host them. The override wins over
   // the source's parsed value.
   if (type === "bar" || type === "column") {
-    const gapWidth = options.gapWidth !== undefined ? options.gapWidth : source.gapWidth;
-    if (gapWidth !== undefined) out.gapWidth = gapWidth;
-    const overlap = options.overlap !== undefined ? options.overlap : source.overlap;
-    if (overlap !== undefined) out.overlap = overlap;
+    const gapWidth = options.gapWidth !== undefined ? options.gapWidth : source.gapWidth
+    if (gapWidth !== undefined) out.gapWidth = gapWidth
+    const overlap = options.overlap !== undefined ? options.overlap : source.overlap
+    if (overlap !== undefined) out.overlap = overlap
   }
 
   const lineGrouping =
-    options.lineGrouping !== undefined ? options.lineGrouping : source.lineGrouping;
+    options.lineGrouping !== undefined ? options.lineGrouping : source.lineGrouping
   if (lineGrouping !== undefined && type === "line") {
-    out.lineGrouping = lineGrouping;
+    out.lineGrouping = lineGrouping
   }
 
   const areaGrouping =
-    options.areaGrouping !== undefined ? options.areaGrouping : source.areaGrouping;
+    options.areaGrouping !== undefined ? options.areaGrouping : source.areaGrouping
   if (areaGrouping !== undefined && type === "area") {
-    out.areaGrouping = areaGrouping;
+    out.areaGrouping = areaGrouping
   }
 
   // `<c:dropLines>` lives on `<c:lineChart>` / `<c:line3DChart>` /
@@ -2683,8 +2677,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // therefore never leaks the connector lines into a chart kind whose
   // schema rejects the element.
   if (type === "line" || type === "area") {
-    const dropLines = resolveCloneDropLines(source.dropLines, options.dropLines);
-    if (dropLines !== undefined) out.dropLines = dropLines;
+    const dropLines = resolveCloneDropLines(source.dropLines, options.dropLines)
+    if (dropLines !== undefined) out.dropLines = dropLines
   }
 
   // `<c:hiLowLines>` lives on `<c:lineChart>` / `<c:line3DChart>` /
@@ -2694,8 +2688,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // into an area clone therefore never leaks the connector lines into
   // a chart kind whose schema rejects the element.
   if (type === "line") {
-    const hiLowLines = resolveCloneHiLowLines(source.hiLowLines, options.hiLowLines);
-    if (hiLowLines !== undefined) out.hiLowLines = hiLowLines;
+    const hiLowLines = resolveCloneHiLowLines(source.hiLowLines, options.hiLowLines)
+    if (hiLowLines !== undefined) out.hiLowLines = hiLowLines
   }
 
   // `<c:serLines>` lives on `<c:barChart>` / `<c:ofPieChart>` per the
@@ -2707,8 +2701,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // never leaks the connector lines into a chart kind whose schema
   // rejects the element.
   if (type === "bar" || type === "column") {
-    const serLines = resolveCloneSerLines(source.serLines, options.serLines);
-    if (serLines !== undefined) out.serLines = serLines;
+    const serLines = resolveCloneSerLines(source.serLines, options.serLines)
+    if (serLines !== undefined) out.serLines = serLines
   }
 
   // Doughnut hole size only makes sense when the resolved type is
@@ -2716,8 +2710,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // the writer does not silently ignore it. The override wins over the
   // source's parsed `holeSize`.
   if (type === "doughnut") {
-    const holeSize = options.holeSize !== undefined ? options.holeSize : source.holeSize;
-    if (holeSize !== undefined) out.holeSize = holeSize;
+    const holeSize = options.holeSize !== undefined ? options.holeSize : source.holeSize
+    if (holeSize !== undefined) out.holeSize = holeSize
   }
 
   // First slice angle round-trips for both pie and doughnut — the
@@ -2728,13 +2722,13 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // no rotation knob.
   if (type === "pie" || type === "doughnut") {
     const firstSliceAng =
-      options.firstSliceAng !== undefined ? options.firstSliceAng : source.firstSliceAng;
-    if (firstSliceAng !== undefined) out.firstSliceAng = firstSliceAng;
+      options.firstSliceAng !== undefined ? options.firstSliceAng : source.firstSliceAng
+    if (firstSliceAng !== undefined) out.firstSliceAng = firstSliceAng
   }
 
-  if (options.showTitle !== undefined) out.showTitle = options.showTitle;
-  if (options.altText !== undefined) out.altText = options.altText;
-  if (options.frameTitle !== undefined) out.frameTitle = options.frameTitle;
+  if (options.showTitle !== undefined) out.showTitle = options.showTitle
+  if (options.altText !== undefined) out.altText = options.altText
+  if (options.frameTitle !== undefined) out.frameTitle = options.frameTitle
 
   // `titleOverlay` only renders inside `<c:title>`, so a clone that
   // omits the title (resolved title is undefined or `showTitle === false`)
@@ -2742,13 +2736,10 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // a missing title for the writer to populate. The override wins over
   // the source's parsed value; absence inherits, `null` drops, a `boolean`
   // replaces. Mirrors the legendOverlay scoping rule.
-  const titleRendered = (out.showTitle ?? Boolean(out.title)) && out.title !== undefined;
+  const titleRendered = (out.showTitle ?? Boolean(out.title)) && out.title !== undefined
   if (titleRendered) {
-    const resolvedTitleOverlay = resolveCloneTitleOverlay(
-      source.titleOverlay,
-      options.titleOverlay,
-    );
-    if (resolvedTitleOverlay !== undefined) out.titleOverlay = resolvedTitleOverlay;
+    const resolvedTitleOverlay = resolveCloneTitleOverlay(source.titleOverlay, options.titleOverlay)
+    if (resolvedTitleOverlay !== undefined) out.titleOverlay = resolvedTitleOverlay
 
     // `titleRotation` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:bodyPr rot="N"/>` slot for the writer
@@ -2760,8 +2751,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleRotation = resolveCloneTitleRotation(
       source.titleRotation,
       options.titleRotation,
-    );
-    if (resolvedTitleRotation !== undefined) out.titleRotation = resolvedTitleRotation;
+    )
+    if (resolvedTitleRotation !== undefined) out.titleRotation = resolvedTitleRotation
 
     // `titleFontSize` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr sz="N"/>` slot for the writer
@@ -2775,8 +2766,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleFontSize = resolveCloneTitleFontSize(
       source.titleFontSize,
       options.titleFontSize,
-    );
-    if (resolvedTitleFontSize !== undefined) out.titleFontSize = resolvedTitleFontSize;
+    )
+    if (resolvedTitleFontSize !== undefined) out.titleFontSize = resolvedTitleFontSize
 
     // `titleBold` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr b=".."/>` slot for the writer
@@ -2785,8 +2776,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // value; absence inherits, `null` drops, a `boolean` replaces.
     // Non-boolean overrides collapse via the normalizer so the cloned
     // `SheetChart` always carries a value the writer will accept.
-    const resolvedTitleBold = resolveCloneTitleBold(source.titleBold, options.titleBold);
-    if (resolvedTitleBold !== undefined) out.titleBold = resolvedTitleBold;
+    const resolvedTitleBold = resolveCloneTitleBold(source.titleBold, options.titleBold)
+    if (resolvedTitleBold !== undefined) out.titleBold = resolvedTitleBold
 
     // `titleItalic` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr i=".."/>` slot for the writer
@@ -2796,8 +2787,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // `boolean` replaces. Non-boolean overrides collapse via the
     // normalizer so the cloned `SheetChart` always carries a value
     // the writer will accept.
-    const resolvedTitleItalic = resolveCloneTitleItalic(source.titleItalic, options.titleItalic);
-    if (resolvedTitleItalic !== undefined) out.titleItalic = resolvedTitleItalic;
+    const resolvedTitleItalic = resolveCloneTitleItalic(source.titleItalic, options.titleItalic)
+    if (resolvedTitleItalic !== undefined) out.titleItalic = resolvedTitleItalic
 
     // `titleColor` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr><a:solidFill>` slot for the
@@ -2807,8 +2798,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // inherits, `null` drops, a hex string replaces. Malformed
     // overrides collapse via the normalizer so the cloned
     // `SheetChart` always carries a value the writer will accept.
-    const resolvedTitleColor = resolveCloneTitleColor(source.titleColor, options.titleColor);
-    if (resolvedTitleColor !== undefined) out.titleColor = resolvedTitleColor;
+    const resolvedTitleColor = resolveCloneTitleColor(source.titleColor, options.titleColor)
+    if (resolvedTitleColor !== undefined) out.titleColor = resolvedTitleColor
 
     // `titleStrike` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr strike="..">` slot for the
@@ -2818,8 +2809,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // value; absence inherits, `null` drops, a `boolean` replaces.
     // Non-boolean overrides collapse via the normalizer so the cloned
     // `SheetChart` always carries a value the writer will accept.
-    const resolvedTitleStrike = resolveCloneTitleStrike(source.titleStrike, options.titleStrike);
-    if (resolvedTitleStrike !== undefined) out.titleStrike = resolvedTitleStrike;
+    const resolvedTitleStrike = resolveCloneTitleStrike(source.titleStrike, options.titleStrike)
+    if (resolvedTitleStrike !== undefined) out.titleStrike = resolvedTitleStrike
 
     // `titleUnderline` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr u="..">` slot for the writer
@@ -2833,8 +2824,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleUnderline = resolveCloneTitleUnderline(
       source.titleUnderline,
       options.titleUnderline,
-    );
-    if (resolvedTitleUnderline !== undefined) out.titleUnderline = resolvedTitleUnderline;
+    )
+    if (resolvedTitleUnderline !== undefined) out.titleUnderline = resolvedTitleUnderline
 
     // `titleFontFamily` only renders inside `<c:title>` — a clone that
     // omits the title has no `<a:defRPr><a:latin>` slot for the writer
@@ -2849,8 +2840,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleFontFamily = resolveCloneTitleFontFamily(
       source.titleFontFamily,
       options.titleFontFamily,
-    );
-    if (resolvedTitleFontFamily !== undefined) out.titleFontFamily = resolvedTitleFontFamily;
+    )
+    if (resolvedTitleFontFamily !== undefined) out.titleFontFamily = resolvedTitleFontFamily
 
     // `titleLayout` only renders inside `<c:title>` — a clone that
     // omits the title has no `<c:layout>` slot for the writer to
@@ -2865,8 +2856,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     // grammar — both manual-layout slots use the same
     // `ChartManualLayout` shape, so a caller can thread a single
     // layout value through both call sites.
-    const resolvedTitleLayout = resolveCloneTitleLayout(source.titleLayout, options.titleLayout);
-    if (resolvedTitleLayout !== undefined) out.titleLayout = resolvedTitleLayout;
+    const resolvedTitleLayout = resolveCloneTitleLayout(source.titleLayout, options.titleLayout)
+    if (resolvedTitleLayout !== undefined) out.titleLayout = resolvedTitleLayout
 
     // `titleFillColor` only renders inside `<c:title>` — a clone that
     // omits the title has no `<c:spPr>` slot for the writer to
@@ -2883,8 +2874,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleFillColor = resolveCloneTitleFillColor(
       source.titleFillColor,
       options.titleFillColor,
-    );
-    if (resolvedTitleFillColor !== undefined) out.titleFillColor = resolvedTitleFillColor;
+    )
+    if (resolvedTitleFillColor !== undefined) out.titleFillColor = resolvedTitleFillColor
 
     // `titleBorderColor` only renders inside `<c:title>` — a clone
     // that omits the title has no `<c:spPr><a:ln>` slot for the writer
@@ -2900,8 +2891,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleBorderColor = resolveCloneTitleBorderColor(
       source.titleBorderColor,
       options.titleBorderColor,
-    );
-    if (resolvedTitleBorderColor !== undefined) out.titleBorderColor = resolvedTitleBorderColor;
+    )
+    if (resolvedTitleBorderColor !== undefined) out.titleBorderColor = resolvedTitleBorderColor
 
     // Same hidden-title scoping for the border (line) stroke width —
     // `<a:ln w=..>` lives inside `<c:title><c:spPr>` per
@@ -2919,8 +2910,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleBorderWidth = resolveCloneTitleBorderWidth(
       source.titleBorderWidth,
       options.titleBorderWidth,
-    );
-    if (resolvedTitleBorderWidth !== undefined) out.titleBorderWidth = resolvedTitleBorderWidth;
+    )
+    if (resolvedTitleBorderWidth !== undefined) out.titleBorderWidth = resolvedTitleBorderWidth
 
     // Title border preset dash pattern. Same hidden-title scoping as
     // the border color / width knobs above — the writer drops the
@@ -2932,8 +2923,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedTitleBorderDash = resolveBorderDash(
       source.titleBorderDash,
       options.titleBorderDash,
-    );
-    if (resolvedTitleBorderDash !== undefined) out.titleBorderDash = resolvedTitleBorderDash;
+    )
+    if (resolvedTitleBorderDash !== undefined) out.titleBorderDash = resolvedTitleBorderDash
   }
 
   // `<c:autoTitleDeleted>` sits on `<c:chart>` directly, not inside
@@ -2947,41 +2938,41 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedAutoTitleDeleted = resolveCloneAutoTitleDeleted(
     source.autoTitleDeleted,
     options.autoTitleDeleted,
-  );
-  if (resolvedAutoTitleDeleted !== undefined) out.autoTitleDeleted = resolvedAutoTitleDeleted;
+  )
+  if (resolvedAutoTitleDeleted !== undefined) out.autoTitleDeleted = resolvedAutoTitleDeleted
 
-  const resolvedDataLabels = resolveChartDataLabels(source.dataLabels, options.dataLabels);
-  if (resolvedDataLabels !== undefined) out.dataLabels = resolvedDataLabels;
+  const resolvedDataLabels = resolveChartDataLabels(source.dataLabels, options.dataLabels)
+  if (resolvedDataLabels !== undefined) out.dataLabels = resolvedDataLabels
 
-  const resolvedDispBlanks = resolveCloneDispBlanksAs(source.dispBlanksAs, options.dispBlanksAs);
-  if (resolvedDispBlanks !== undefined) out.dispBlanksAs = resolvedDispBlanks;
+  const resolvedDispBlanks = resolveCloneDispBlanksAs(source.dispBlanksAs, options.dispBlanksAs)
+  if (resolvedDispBlanks !== undefined) out.dispBlanksAs = resolvedDispBlanks
 
-  const resolvedVaryColors = resolveCloneVaryColors(source.varyColors, options.varyColors);
-  if (resolvedVaryColors !== undefined) out.varyColors = resolvedVaryColors;
+  const resolvedVaryColors = resolveCloneVaryColors(source.varyColors, options.varyColors)
+  if (resolvedVaryColors !== undefined) out.varyColors = resolvedVaryColors
 
-  const resolvedPlotVisOnly = resolveClonePlotVisOnly(source.plotVisOnly, options.plotVisOnly);
-  if (resolvedPlotVisOnly !== undefined) out.plotVisOnly = resolvedPlotVisOnly;
+  const resolvedPlotVisOnly = resolveClonePlotVisOnly(source.plotVisOnly, options.plotVisOnly)
+  if (resolvedPlotVisOnly !== undefined) out.plotVisOnly = resolvedPlotVisOnly
 
   const resolvedShowDLblsOverMax = resolveCloneShowDLblsOverMax(
     source.showDLblsOverMax,
     options.showDLblsOverMax,
-  );
-  if (resolvedShowDLblsOverMax !== undefined) out.showDLblsOverMax = resolvedShowDLblsOverMax;
+  )
+  if (resolvedShowDLblsOverMax !== undefined) out.showDLblsOverMax = resolvedShowDLblsOverMax
 
   const resolvedRoundedCorners = resolveCloneRoundedCorners(
     source.roundedCorners,
     options.roundedCorners,
-  );
-  if (resolvedRoundedCorners !== undefined) out.roundedCorners = resolvedRoundedCorners;
+  )
+  if (resolvedRoundedCorners !== undefined) out.roundedCorners = resolvedRoundedCorners
 
-  const resolvedStyle = resolveCloneStyle(source.style, options.style);
-  if (resolvedStyle !== undefined) out.style = resolvedStyle;
+  const resolvedStyle = resolveCloneStyle(source.style, options.style)
+  if (resolvedStyle !== undefined) out.style = resolvedStyle
 
-  const resolvedLang = resolveCloneLang(source.lang, options.lang);
-  if (resolvedLang !== undefined) out.lang = resolvedLang;
+  const resolvedLang = resolveCloneLang(source.lang, options.lang)
+  if (resolvedLang !== undefined) out.lang = resolvedLang
 
-  const resolvedDate1904 = resolveCloneDate1904(source.date1904, options.date1904);
-  if (resolvedDate1904 !== undefined) out.date1904 = resolvedDate1904;
+  const resolvedDate1904 = resolveCloneDate1904(source.date1904, options.date1904)
+  if (resolvedDate1904 !== undefined) out.date1904 = resolvedDate1904
 
   // `<c:dTable>` only renders inside `<c:plotArea>` alongside the axes
   // — pie / doughnut have no axes at all, so the OOXML schema places no
@@ -2991,8 +2982,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // whose schema rejects it. Override wins over the source's parsed
   // value.
   if (type !== "pie" && type !== "doughnut") {
-    const resolvedDataTable = resolveCloneDataTable(source.dataTable, options.dataTable);
-    if (resolvedDataTable !== undefined) out.dataTable = resolvedDataTable;
+    const resolvedDataTable = resolveCloneDataTable(source.dataTable, options.dataTable)
+    if (resolvedDataTable !== undefined) out.dataTable = resolvedDataTable
   }
 
   // `<c:protection>` lives on `<c:chartSpace>` (not inside
@@ -3001,8 +2992,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // value, and the grammar follows the same `object | boolean | null`
   // shape as `dataTable` so the chart-level block toggles compose
   // identically at the call site.
-  const resolvedProtection = resolveCloneProtection(source.protection, options.protection);
-  if (resolvedProtection !== undefined) out.protection = resolvedProtection;
+  const resolvedProtection = resolveCloneProtection(source.protection, options.protection)
+  if (resolvedProtection !== undefined) out.protection = resolvedProtection
 
   // `<c:view3D>` lives on `<c:chart>` directly, so the OOXML schema
   // accepts it on every chart family — both 2D and 3D. The toggle is
@@ -3013,8 +3004,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // Override wins over the source's parsed value, and the grammar
   // follows the standard `object | null` shape so the chart-level
   // block toggles compose the same way at the call site.
-  const resolvedView3D = resolveView3D(source.view3D, options.view3D);
-  if (resolvedView3D !== undefined) out.view3D = resolvedView3D;
+  const resolvedView3D = resolveView3D(source.view3D, options.view3D)
+  if (resolvedView3D !== undefined) out.view3D = resolvedView3D
 
   // `<c:floor>` lives on `<c:chart>` directly (between `<c:view3D>`
   // and `<c:plotArea>` per CT_Chart), so the OOXML schema accepts it
@@ -3029,8 +3020,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedFloorThickness = resolveFloorThickness(
     source.floorThickness,
     options.floorThickness,
-  );
-  if (resolvedFloorThickness !== undefined) out.floorThickness = resolvedFloorThickness;
+  )
+  if (resolvedFloorThickness !== undefined) out.floorThickness = resolvedFloorThickness
 
   // `<c:sideWall>` lives on `<c:chart>` directly (between `<c:floor>`
   // and `<c:backWall>` / `<c:plotArea>` per CT_Chart), so the OOXML
@@ -3045,8 +3036,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedSideWallThickness = resolveSideWallThickness(
     source.sideWallThickness,
     options.sideWallThickness,
-  );
-  if (resolvedSideWallThickness !== undefined) out.sideWallThickness = resolvedSideWallThickness;
+  )
+  if (resolvedSideWallThickness !== undefined) out.sideWallThickness = resolvedSideWallThickness
 
   // `<c:backWall>` lives on `<c:chart>` directly (between `<c:sideWall>`
   // and `<c:plotArea>` per CT_Chart), so the OOXML schema accepts it
@@ -3061,19 +3052,16 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   const resolvedBackWallThickness = resolveBackWallThickness(
     source.backWallThickness,
     options.backWallThickness,
-  );
-  if (resolvedBackWallThickness !== undefined) out.backWallThickness = resolvedBackWallThickness;
+  )
+  if (resolvedBackWallThickness !== undefined) out.backWallThickness = resolvedBackWallThickness
 
   // `<c:scatterStyle>` only renders inside `<c:scatterChart>`. Drop the
   // field on every other resolved type so a scatter template flattened
   // to line / column does not leak the preset into a chart kind whose
   // schema rejects it. Override wins over the source's parsed value.
   if (type === "scatter") {
-    const resolvedScatterStyle = resolveCloneScatterStyle(
-      source.scatterStyle,
-      options.scatterStyle,
-    );
-    if (resolvedScatterStyle !== undefined) out.scatterStyle = resolvedScatterStyle;
+    const resolvedScatterStyle = resolveCloneScatterStyle(source.scatterStyle, options.scatterStyle)
+    if (resolvedScatterStyle !== undefined) out.scatterStyle = resolvedScatterStyle
   }
 
   // `<c:upDownBars>` only renders inside `<c:lineChart>` (the writer
@@ -3084,8 +3072,8 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
   // line-flavored chart-type elements. Override wins over the source's
   // parsed value.
   if (type === "line") {
-    const resolvedUpDownBars = resolveCloneUpDownBars(source.upDownBars, options.upDownBars);
-    if (resolvedUpDownBars !== undefined) out.upDownBars = resolvedUpDownBars;
+    const resolvedUpDownBars = resolveCloneUpDownBars(source.upDownBars, options.upDownBars)
+    if (resolvedUpDownBars !== undefined) out.upDownBars = resolvedUpDownBars
 
     // `<c:upDownBars><c:gapWidth>` only makes sense when the parent
     // toggle is on. Drop the gap-width value silently when the resolved
@@ -3097,9 +3085,9 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
       const resolvedUpDownBarsGapWidth = resolveCloneUpDownBarsGapWidth(
         source.upDownBarsGapWidth,
         options.upDownBarsGapWidth,
-      );
+      )
       if (resolvedUpDownBarsGapWidth !== undefined) {
-        out.upDownBarsGapWidth = resolvedUpDownBarsGapWidth;
+        out.upDownBarsGapWidth = resolvedUpDownBarsGapWidth
       }
     }
   }
@@ -3113,19 +3101,19 @@ export function cloneChart(source: Chart, options: CloneChartOptions): SheetChar
     const resolvedShowLineMarkers = resolveShowLineMarkers(
       source.showLineMarkers,
       options.showLineMarkers,
-    );
-    if (resolvedShowLineMarkers !== undefined) out.showLineMarkers = resolvedShowLineMarkers;
+    )
+    if (resolvedShowLineMarkers !== undefined) out.showLineMarkers = resolvedShowLineMarkers
   }
 
   // Pie and doughnut have no axes, so silently skip carrying over axis
   // titles even when the source declared them or the caller passed an
   // override.
   if (type !== "pie" && type !== "doughnut") {
-    const axes = resolveAxes(source.axes, options.axes, type);
-    if (axes !== undefined) out.axes = axes;
+    const axes = resolveAxes(source.axes, options.axes, type)
+    if (axes !== undefined) out.axes = axes
   }
 
-  return out;
+  return out
 }
 
 // ── Internals ────────────────────────────────────────────────────────
@@ -3148,37 +3136,37 @@ export function chartKindToWriteKind(kind: ChartKind): WriteChartKind | undefine
       // `<c:barChart barDir="col">`; the parser does not split them.
       // Default to the more common vertical orientation; callers who
       // need horizontal pass `type: "bar"` explicitly.
-      return "column";
+      return "column"
     case "line":
     case "line3D":
-      return "line";
+      return "line"
     case "pie":
     case "pie3D":
-      return "pie";
+      return "pie"
     case "doughnut":
-      return "doughnut";
+      return "doughnut"
     case "area":
     case "area3D":
-      return "area";
+      return "area"
     case "scatter":
-      return "scatter";
+      return "scatter"
     case "bubble":
     case "radar":
     case "surface":
     case "surface3D":
     case "stock":
     case "ofPie":
-      return undefined;
+      return undefined
   }
 }
 
 function pickWritableKind(source: Chart): WriteChartKind {
   if (source.kinds.length === 0) {
-    throw new Error("cloneChart: source chart has no kinds; pass `options.type` explicitly");
+    throw new Error("cloneChart: source chart has no kinds; pass `options.type` explicitly")
   }
   for (const k of source.kinds) {
-    const mapped = chartKindToWriteKind(k);
-    if (mapped) return mapped;
+    const mapped = chartKindToWriteKind(k)
+    if (mapped) return mapped
   }
   throw new Error(
     `cloneChart: source kind${source.kinds.length > 1 ? "s" : ""} ${source.kinds
@@ -3186,16 +3174,16 @@ function pickWritableKind(source: Chart): WriteChartKind {
       .join(
         ", ",
       )} cannot be authored on the write side; pass \`options.type\` to coerce a renderable kind`,
-  );
+  )
 }
 
 function resolveTitle(
   sourceTitle: string | undefined,
   override: string | null | undefined,
 ): string | undefined {
-  if (override === undefined) return sourceTitle;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceTitle
+  if (override === null) return undefined
+  return override
 }
 
 // `normalizeBorderWidthPt` (aliased to the shared `clampStrokeWidthPt`)

@@ -12,8 +12,8 @@
 // chart-writer.ts and stay there because their signatures and call
 // patterns remain orchestration-shape rather than per-host.
 
-import type { ChartDisplayBlanksAs, ChartProtection } from "../../_types";
-import { normalizeRgbHex } from "./shape";
+import type { ChartDisplayBlanksAs, ChartProtection } from "../../_types"
+import { normalizeRgbHex } from "./shape"
 
 /**
  * Resolve a `dispBlanksAs` override.
@@ -30,9 +30,9 @@ export function resolveCloneDispBlanksAs(
   sourceValue: ChartDisplayBlanksAs | undefined,
   override: ChartDisplayBlanksAs | null | undefined,
 ): ChartDisplayBlanksAs | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -50,9 +50,9 @@ export function resolveClonePlotVisOnly(
   sourceValue: boolean | undefined,
   override: boolean | null | undefined,
 ): boolean | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -71,9 +71,9 @@ export function resolveCloneShowDLblsOverMax(
   sourceValue: boolean | undefined,
   override: boolean | null | undefined,
 ): boolean | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -91,9 +91,9 @@ export function resolveCloneRoundedCorners(
   sourceValue: boolean | undefined,
   override: boolean | null | undefined,
 ): boolean | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -115,9 +115,9 @@ export function resolveCloneStyle(
   sourceValue: number | undefined,
   override: number | null | undefined,
 ): number | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -140,9 +140,9 @@ export function resolveCloneLang(
   sourceValue: string | undefined,
   override: string | null | undefined,
 ): string | undefined {
-  if (override === undefined) return sourceValue;
-  if (override === null) return undefined;
-  return override;
+  if (override === undefined) return sourceValue
+  if (override === null) return undefined
+  return override
 }
 
 /**
@@ -168,14 +168,14 @@ export function resolveCloneDate1904(
   sourceValue: boolean | undefined,
   override: boolean | null | undefined,
 ): boolean | undefined {
-  const merged = override === undefined ? sourceValue : override === null ? undefined : override;
-  if (merged === true) return true;
+  const merged = override === undefined ? sourceValue : override === null ? undefined : override
+  if (merged === true) return true
   // `false` and `undefined` both collapse to `undefined` — absence
   // and the OOXML default `<c:date1904 val="0"/>` round-trip the
   // same way through parseChart -> cloneChart -> writeChart, so the
   // resolved chart drops the field rather than carry a value the
   // writer would skip on emit anyway.
-  return undefined;
+  return undefined
 }
 
 /**
@@ -212,24 +212,24 @@ export function resolveCloneProtection(
     // Inherit — pass the source through verbatim. The writer accepts
     // both the boolean and object shapes, so a parsed
     // {@link ChartProtection} round-trips directly.
-    return sourceValue;
+    return sourceValue
   }
   if (override === null) {
     // Drop the inherited block. The writer treats `undefined` as
     // suppression and skips `<c:protection>` entirely.
-    return undefined;
+    return undefined
   }
   if (override === false) {
     // Symmetric with `null` — kept distinct in the API surface for
     // ergonomic alignment with the writer's `boolean | object` shape,
     // but emits the same on-the-wire result (no `<c:protection>`).
-    return undefined;
+    return undefined
   }
   // `true` or a {@link ChartProtection} object — replace the inherited
   // block wholesale. The writer accepts both forms and falls back to
   // the OOXML reference default `false` for any field the object
   // leaves unset.
-  return override;
+  return override
 }
 
 /**
@@ -244,7 +244,7 @@ export function resolveCloneProtection(
  * back to absence.
  */
 export function normalizeClonePlotAreaFillColor(value: string | undefined): string | undefined {
-  return normalizeRgbHex(value);
+  return normalizeRgbHex(value)
 }
 
 /**
@@ -260,7 +260,7 @@ export function normalizeClonePlotAreaFillColor(value: string | undefined): stri
  * {@link normalizeClonePlotAreaFillColor} — same hex grammar.
  */
 export function normalizeClonePlotAreaBorderColor(value: string | undefined): string | undefined {
-  return normalizeRgbHex(value);
+  return normalizeRgbHex(value)
 }
 
 /**
@@ -276,7 +276,7 @@ export function normalizeClonePlotAreaBorderColor(value: string | undefined): st
  * writer would silently elide back to absence.
  */
 export function normalizeCloneChartSpaceFillColor(value: string | undefined): string | undefined {
-  return normalizeRgbHex(value);
+  return normalizeRgbHex(value)
 }
 
 /**
@@ -305,9 +305,9 @@ export function resolveCloneChartSpaceFillColor(
   sourceValue: string | undefined,
   override: string | null | undefined,
 ): string | undefined {
-  if (override === undefined) return normalizeCloneChartSpaceFillColor(sourceValue);
-  if (override === null) return undefined;
-  return normalizeCloneChartSpaceFillColor(override);
+  if (override === undefined) return normalizeCloneChartSpaceFillColor(sourceValue)
+  if (override === null) return undefined
+  return normalizeCloneChartSpaceFillColor(override)
 }
 
 /**
@@ -323,7 +323,7 @@ export function resolveCloneChartSpaceFillColor(
  * writer would silently elide back to absence.
  */
 export function normalizeCloneChartSpaceBorderColor(value: string | undefined): string | undefined {
-  return normalizeRgbHex(value);
+  return normalizeRgbHex(value)
 }
 
 /**
@@ -352,7 +352,7 @@ export function resolveCloneChartSpaceBorderColor(
   sourceValue: string | undefined,
   override: string | null | undefined,
 ): string | undefined {
-  if (override === undefined) return normalizeCloneChartSpaceBorderColor(sourceValue);
-  if (override === null) return undefined;
-  return normalizeCloneChartSpaceBorderColor(override);
+  if (override === undefined) return normalizeCloneChartSpaceBorderColor(sourceValue)
+  if (override === null) return undefined
+  return normalizeCloneChartSpaceBorderColor(override)
 }

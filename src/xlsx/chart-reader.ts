@@ -22,21 +22,21 @@ import type {
   ChartProtection,
   ChartScatterStyle,
   ChartSeriesInfo,
-} from "../_types";
-import { parseXml } from "../xml/parser";
-import type { XmlElement } from "../xml/parser";
+} from "../_types"
+import { parseXml } from "../xml/parser"
+import type { XmlElement } from "../xml/parser"
 import {
   parseBorderDashFromSpPr,
   parseBorderWidthFromSpPr,
   parseSpPrBorderColor,
   parseSpPrFill,
-} from "./chart/shape";
+} from "./chart/shape"
 import {
   parseBackWallThickness,
   parseFloorThickness,
   parseSideWallThickness,
   parseView3D,
-} from "./chart/walls";
+} from "./chart/walls"
 import {
   parseTitle,
   parseTitleBold,
@@ -53,7 +53,7 @@ import {
   parseTitleRotation,
   parseTitleStrike,
   parseTitleUnderline,
-} from "./chart/title";
+} from "./chart/title"
 import {
   parseLegend,
   parseLegendBold,
@@ -70,11 +70,11 @@ import {
   parseLegendOverlay,
   parseLegendStrikethrough,
   parseLegendUnderline,
-} from "./chart/legend";
-import { parseDataTable } from "./chart/dataTable";
-import { parseDataLabels } from "./chart/dataLabels";
-import { parseSeries } from "./chart/series";
-import { parseAutoTitleDeleted } from "./chart/axis";
+} from "./chart/legend"
+import { parseDataTable } from "./chart/dataTable"
+import { parseDataLabels } from "./chart/dataLabels"
+import { parseSeries } from "./chart/series"
+import { parseAutoTitleDeleted } from "./chart/axis"
 import {
   parseAxes,
   parseBarGrouping,
@@ -94,7 +94,7 @@ import {
   parseShowLineMarkers,
   parseUpDownBarsGapWidth,
   parseVaryColors,
-} from "./chart/plotArea";
+} from "./chart/plotArea"
 
 /** All chart-type element local names recognized by Excel. */
 const CHART_KIND_TAGS: ReadonlyMap<string, ChartKind> = new Map([
@@ -114,7 +114,7 @@ const CHART_KIND_TAGS: ReadonlyMap<string, ChartKind> = new Map([
   ["surface3DChart", "surface3D"],
   ["stockChart", "stock"],
   ["ofPieChart", "ofPie"],
-]);
+])
 
 /**
  * Parse a chart file (`xl/charts/chartN.xml`) into a {@link Chart}.
@@ -124,27 +124,27 @@ const CHART_KIND_TAGS: ReadonlyMap<string, ChartKind> = new Map([
  * no chart-type element (extremely rare, but possible for empty charts).
  */
 export function parseChart(xml: string): Chart | undefined {
-  const root = parseXml(xml);
+  const root = parseXml(xml)
   // chartSpace can be the root, or wrapped if the file has been
   // pre-processed; tolerate both shapes.
-  const chartSpace = root.local === "chartSpace" ? root : findDescendant(root, "chartSpace");
-  if (!chartSpace) return undefined;
+  const chartSpace = root.local === "chartSpace" ? root : findDescendant(root, "chartSpace")
+  if (!chartSpace) return undefined
 
-  const chartEl = findChild(chartSpace, "chart");
-  if (!chartEl) return { kinds: [], seriesCount: 0 };
+  const chartEl = findChild(chartSpace, "chart")
+  if (!chartEl) return { kinds: [], seriesCount: 0 }
 
-  const out: Chart = { kinds: [], seriesCount: 0 };
+  const out: Chart = { kinds: [], seriesCount: 0 }
 
-  const title = parseTitle(chartEl);
-  if (title !== undefined) out.title = title;
+  const title = parseTitle(chartEl)
+  if (title !== undefined) out.title = title
 
   // `<c:overlay>` is a child of `<c:title>`, so a chart that omits the
   // title element has no overlay flag to surface — pulling the value
   // off a `<c:title>` that is not part of the chart's render would leak
   // a toggle that has no effect. Only attempt the parse when the chart
   // declares a title element.
-  const titleOverlay = parseTitleOverlay(chartEl);
-  if (titleOverlay !== undefined) out.titleOverlay = titleOverlay;
+  const titleOverlay = parseTitleOverlay(chartEl)
+  if (titleOverlay !== undefined) out.titleOverlay = titleOverlay
 
   // `<c:title><c:tx><c:rich><a:bodyPr rot="N"/></c:rich></c:tx></c:title>`
   // mirrors Excel's "Format Chart Title -> Size & Properties ->
@@ -154,8 +154,8 @@ export function parseChart(xml: string): Chart | undefined {
   // is absent. The value comes back in whole degrees (range `-90..90`)
   // for symmetry with the writer-side
   // {@link SheetChart.titleRotation} field.
-  const titleRotation = parseTitleRotation(chartEl);
-  if (titleRotation !== undefined) out.titleRotation = titleRotation;
+  const titleRotation = parseTitleRotation(chartEl)
+  if (titleRotation !== undefined) out.titleRotation = titleRotation
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr sz="N"/></a:pPr></a:p>
   // </c:rich></c:tx></c:title>` mirrors Excel's "Format Chart Title ->
@@ -166,8 +166,8 @@ export function parseChart(xml: string): Chart | undefined {
   // short-circuits to `undefined`. The value comes back in points
   // (range `1..400`) for symmetry with the writer-side
   // {@link SheetChart.titleFontSize} field.
-  const titleFontSize = parseTitleFontSize(chartEl);
-  if (titleFontSize !== undefined) out.titleFontSize = titleFontSize;
+  const titleFontSize = parseTitleFontSize(chartEl)
+  if (titleFontSize !== undefined) out.titleFontSize = titleFontSize
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr b=".."/></a:pPr></a:p>
   // </c:rich></c:tx></c:title>` mirrors Excel's "Format Chart Title ->
@@ -179,8 +179,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `b="0"` round-trip identically through {@link cloneChart} — only
   // an explicit `b="1"` surfaces `true`. The value threads straight
   // back into the writer-side {@link SheetChart.titleBold} field.
-  const titleBold = parseTitleBold(chartEl);
-  if (titleBold !== undefined) out.titleBold = titleBold;
+  const titleBold = parseTitleBold(chartEl)
+  if (titleBold !== undefined) out.titleBold = titleBold
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr i=".."/></a:pPr></a:p>
   // </c:rich></c:tx></c:title>` mirrors Excel's "Format Chart Title ->
@@ -192,8 +192,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `i="0"` round-trip identically through {@link cloneChart} — only
   // an explicit `i="1"` surfaces `true`. The value threads straight
   // back into the writer-side {@link SheetChart.titleItalic} field.
-  const titleItalic = parseTitleItalic(chartEl);
-  if (titleItalic !== undefined) out.titleItalic = titleItalic;
+  const titleItalic = parseTitleItalic(chartEl)
+  if (titleItalic !== undefined) out.titleItalic = titleItalic
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr><a:solidFill>
   // <a:srgbClr val="RRGGBB"/></a:solidFill></a:defRPr></a:pPr></a:p>
@@ -206,8 +206,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `<a:hslClr>`, etc.) collapse to `undefined` since only the literal
   // RGB triple round-trips losslessly through the writer. The value
   // threads straight back into the writer-side {@link SheetChart.titleColor}.
-  const titleColor = parseTitleColor(chartEl);
-  if (titleColor !== undefined) out.titleColor = titleColor;
+  const titleColor = parseTitleColor(chartEl)
+  if (titleColor !== undefined) out.titleColor = titleColor
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr strike=".."/></a:pPr>
   // </a:p></c:rich></c:tx></c:title>` mirrors Excel's "Format Chart
@@ -221,8 +221,8 @@ export function parseChart(xml: string): Chart | undefined {
   // to `undefined` so absence and the OOXML default round-trip
   // identically through {@link cloneChart}. The value threads
   // straight back into the writer-side {@link SheetChart.titleStrike}.
-  const titleStrike = parseTitleStrike(chartEl);
-  if (titleStrike !== undefined) out.titleStrike = titleStrike;
+  const titleStrike = parseTitleStrike(chartEl)
+  if (titleStrike !== undefined) out.titleStrike = titleStrike
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr u=".."/></a:pPr>
   // </a:p></c:rich></c:tx></c:title>` mirrors Excel's "Format Chart
@@ -237,8 +237,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `undefined` so absence and the OOXML default round-trip
   // identically through {@link cloneChart}. The value threads
   // straight back into the writer-side {@link SheetChart.titleUnderline}.
-  const titleUnderline = parseTitleUnderline(chartEl);
-  if (titleUnderline !== undefined) out.titleUnderline = titleUnderline;
+  const titleUnderline = parseTitleUnderline(chartEl)
+  if (titleUnderline !== undefined) out.titleUnderline = titleUnderline
 
   // `<c:title><c:tx><c:rich><a:p><a:pPr><a:defRPr><a:latin
   // typeface=".."/></a:defRPr></a:pPr></a:p></c:rich></c:tx></c:title>`
@@ -251,8 +251,8 @@ export function parseChart(xml: string): Chart | undefined {
   // round-trip identically through {@link cloneChart}. The value
   // threads straight back into the writer-side
   // {@link SheetChart.titleFontFamily} field.
-  const titleFontFamily = parseTitleFontFamily(chartEl);
-  if (titleFontFamily !== undefined) out.titleFontFamily = titleFontFamily;
+  const titleFontFamily = parseTitleFontFamily(chartEl)
+  if (titleFontFamily !== undefined) out.titleFontFamily = titleFontFamily
 
   // `<c:title><c:layout><c:manualLayout>` carries Excel's "Format Chart
   // Title -> Title Options -> Position -> Custom" placement. CT_Title
@@ -263,8 +263,8 @@ export function parseChart(xml: string): Chart | undefined {
   // fresh chart and a chart that pinned an out-of-range layout both
   // round-trip lossless. Same accept-or-drop grammar as
   // {@link parseLegendLayout}.
-  const titleLayout = parseTitleLayout(chartEl);
-  if (titleLayout !== undefined) out.titleLayout = titleLayout;
+  const titleLayout = parseTitleLayout(chartEl)
+  if (titleLayout !== undefined) out.titleLayout = titleLayout
 
   // `<c:title><c:spPr><a:solidFill>` carries Excel's "Format Chart
   // Title -> Fill -> Solid fill -> Color" picker. CT_Title places the
@@ -279,8 +279,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `<c:strRef>` formula reference can still surface its background
   // fill — Excel's "Format Title -> Fill" dialog is independent of
   // whether the text body is rich or a formula.
-  const titleFillColor = parseTitleFillColor(chartEl);
-  if (titleFillColor !== undefined) out.titleFillColor = titleFillColor;
+  const titleFillColor = parseTitleFillColor(chartEl)
+  if (titleFillColor !== undefined) out.titleFillColor = titleFillColor
 
   // `<c:title><c:spPr><a:ln><a:solidFill>` carries Excel's "Format
   // Chart Title -> Border -> Solid line -> Color" picker. The
@@ -292,8 +292,8 @@ export function parseChart(xml: string): Chart | undefined {
   // non-solid line fills (`<a:noFill>` / `<a:gradFill>` /
   // `<a:pattFill>`) all collapse to `undefined` so a round-trip
   // never fabricates a stroke the writer cannot reproduce on emit.
-  const titleBorderColor = parseTitleBorderColor(chartEl);
-  if (titleBorderColor !== undefined) out.titleBorderColor = titleBorderColor;
+  const titleBorderColor = parseTitleBorderColor(chartEl)
+  if (titleBorderColor !== undefined) out.titleBorderColor = titleBorderColor
 
   // `<c:title><c:spPr><a:ln w="EMU">` carries Excel's "Format Chart
   // Title -> Border -> Width" pin. The OOXML `w` attribute stores the
@@ -304,8 +304,8 @@ export function parseChart(xml: string): Chart | undefined {
   // round-trips through the writer's clamp. Scoped to the title's
   // `<c:spPr>` so a stray `<a:ln w=..>` elsewhere (series stroke, axis
   // line, plot-area / legend border) cannot leak into this field.
-  const titleBorderWidth = parseTitleBorderWidth(chartEl);
-  if (titleBorderWidth !== undefined) out.titleBorderWidth = titleBorderWidth;
+  const titleBorderWidth = parseTitleBorderWidth(chartEl)
+  if (titleBorderWidth !== undefined) out.titleBorderWidth = titleBorderWidth
 
   // `<c:title><c:spPr><a:ln><a:prstDash val=".."/></a:ln></c:spPr>
   // </c:title>` carries Excel's "Format Chart Title -> Border -> Dash
@@ -314,8 +314,8 @@ export function parseChart(xml: string): Chart | undefined {
   // and the OOXML default round-trip identically. Scoped to the
   // title's `<c:spPr>` so a stray `<a:prstDash>` elsewhere cannot leak
   // in.
-  const titleBorderDash = parseTitleBorderDash(chartEl);
-  if (titleBorderDash !== undefined) out.titleBorderDash = titleBorderDash;
+  const titleBorderDash = parseTitleBorderDash(chartEl)
+  if (titleBorderDash !== undefined) out.titleBorderDash = titleBorderDash
 
   // `<c:autoTitleDeleted>` records whether the user explicitly deleted
   // the auto-generated title — independent of whether a literal
@@ -325,33 +325,33 @@ export function parseChart(xml: string): Chart | undefined {
   // no `<c:title>` may still pin the flag. The OOXML default `false`
   // collapses to `undefined` so absence and the default round-trip
   // identically through cloneChart.
-  const autoTitleDeleted = parseAutoTitleDeleted(chartEl);
-  if (autoTitleDeleted !== undefined) out.autoTitleDeleted = autoTitleDeleted;
+  const autoTitleDeleted = parseAutoTitleDeleted(chartEl)
+  if (autoTitleDeleted !== undefined) out.autoTitleDeleted = autoTitleDeleted
 
-  const plotArea = findChild(chartEl, "plotArea");
+  const plotArea = findChild(chartEl, "plotArea")
   if (plotArea) {
-    let seriesCount = 0;
-    const series: ChartSeriesInfo[] = [];
-    let barGrouping: ChartBarGrouping | undefined;
-    let lineGrouping: ChartLineAreaGrouping | undefined;
-    let areaGrouping: ChartLineAreaGrouping | undefined;
-    let chartLevelLabels: ChartDataLabelsInfo | undefined;
-    let holeSize: number | undefined;
-    let gapWidth: number | undefined;
-    let overlap: number | undefined;
-    let firstSliceAng: number | undefined;
-    let varyColors: boolean | undefined;
-    let scatterStyle: ChartScatterStyle | undefined;
-    let dropLines: boolean | undefined;
-    let hiLowLines: boolean | undefined;
-    let serLines: boolean | undefined;
-    let upDownBars: boolean | undefined;
-    let upDownBarsGapWidth: number | undefined;
-    let showLineMarkers: boolean | undefined;
+    let seriesCount = 0
+    const series: ChartSeriesInfo[] = []
+    let barGrouping: ChartBarGrouping | undefined
+    let lineGrouping: ChartLineAreaGrouping | undefined
+    let areaGrouping: ChartLineAreaGrouping | undefined
+    let chartLevelLabels: ChartDataLabelsInfo | undefined
+    let holeSize: number | undefined
+    let gapWidth: number | undefined
+    let overlap: number | undefined
+    let firstSliceAng: number | undefined
+    let varyColors: boolean | undefined
+    let scatterStyle: ChartScatterStyle | undefined
+    let dropLines: boolean | undefined
+    let hiLowLines: boolean | undefined
+    let serLines: boolean | undefined
+    let upDownBars: boolean | undefined
+    let upDownBarsGapWidth: number | undefined
+    let showLineMarkers: boolean | undefined
     for (const child of childElements(plotArea)) {
-      const kind = CHART_KIND_TAGS.get(child.local);
-      if (!kind) continue;
-      if (!out.kinds.includes(kind)) out.kinds.push(kind);
+      const kind = CHART_KIND_TAGS.get(child.local)
+      if (!kind) continue
+      if (!out.kinds.includes(kind)) out.kinds.push(kind)
       // Pull `<c:varyColors>` off the first chart-type element that
       // carries one. The OOXML schema places `<c:varyColors>` on every
       // chart-type element except `surface`, `surface3D`, and `stock`,
@@ -359,14 +359,14 @@ export function parseChart(xml: string): Chart | undefined {
       // collapse (true on pie / doughnut / ofPie, false elsewhere)
       // happens inside `parseVaryColors`.
       if (varyColors === undefined) {
-        varyColors = parseVaryColors(child, kind);
+        varyColors = parseVaryColors(child, kind)
       }
       // Pull grouping off the first bar/column-flavored chart-type
       // element. Combo charts that mix bar with line/area would
       // otherwise need a per-series field; for the common case of a
       // single `<c:barChart>` body this is the value Excel applies.
       if (barGrouping === undefined && (kind === "bar" || kind === "bar3D")) {
-        barGrouping = parseBarGrouping(child);
+        barGrouping = parseBarGrouping(child)
       }
       // Pull `<c:gapWidth>` / `<c:overlap>` off the first bar/column
       // chart-type element. Both are CT_BarChart-only knobs — they sit
@@ -376,24 +376,24 @@ export function parseChart(xml: string): Chart | undefined {
       // here so absence and the default round-trip identically through
       // {@link cloneChart}.
       if (gapWidth === undefined && (kind === "bar" || kind === "bar3D")) {
-        gapWidth = parseGapWidth(child);
+        gapWidth = parseGapWidth(child)
       }
       if (overlap === undefined && (kind === "bar" || kind === "bar3D")) {
-        overlap = parseOverlap(child);
+        overlap = parseOverlap(child)
       }
       // Same shape for line/area: surface the first stacked variant
       // we encounter. `"standard"` collapses to undefined for symmetry
       // with the writer's default.
       if (lineGrouping === undefined && (kind === "line" || kind === "line3D")) {
-        lineGrouping = parseLineAreaGrouping(child);
+        lineGrouping = parseLineAreaGrouping(child)
       }
       if (areaGrouping === undefined && (kind === "area" || kind === "area3D")) {
-        areaGrouping = parseLineAreaGrouping(child);
+        areaGrouping = parseLineAreaGrouping(child)
       }
       // Pull `<c:holeSize>` off a doughnut chart so a parsed template
       // can round-trip its hole back through {@link cloneChart}.
       if (holeSize === undefined && kind === "doughnut") {
-        holeSize = parseHoleSize(child);
+        holeSize = parseHoleSize(child)
       }
       // `<c:firstSliceAng>` lives on `<c:pieChart>` and
       // `<c:doughnutChart>` (also pie3D / ofPie which we lump in here
@@ -405,7 +405,7 @@ export function parseChart(xml: string): Chart | undefined {
         firstSliceAng === undefined &&
         (kind === "pie" || kind === "pie3D" || kind === "doughnut" || kind === "ofPie")
       ) {
-        firstSliceAng = parseFirstSliceAng(child);
+        firstSliceAng = parseFirstSliceAng(child)
       }
       // `<c:scatterStyle>` lives exclusively on `<c:scatterChart>` per
       // the OOXML schema, so the lookup is gated on the matching kind.
@@ -413,7 +413,7 @@ export function parseChart(xml: string): Chart | undefined {
       // it or carry a token outside the enum — `parseScatterStyle`
       // returns `undefined` in both cases.
       if (scatterStyle === undefined && kind === "scatter") {
-        scatterStyle = parseScatterStyle(child);
+        scatterStyle = parseScatterStyle(child)
       }
       // `<c:dropLines>` lives on `<c:lineChart>` / `<c:line3DChart>` /
       // `<c:areaChart>` / `<c:area3DChart>`. The element is bare — its
@@ -423,7 +423,7 @@ export function parseChart(xml: string): Chart | undefined {
         dropLines === undefined &&
         (kind === "line" || kind === "line3D" || kind === "area" || kind === "area3D")
       ) {
-        dropLines = parseDropLines(child);
+        dropLines = parseDropLines(child)
       }
       // `<c:hiLowLines>` lives on `<c:lineChart>` / `<c:line3DChart>` /
       // `<c:stockChart>`. Hucre's writer authors `<c:lineChart>` only,
@@ -431,7 +431,7 @@ export function parseChart(xml: string): Chart | undefined {
       // surface the flag here too. Same bare-element shape as
       // `<c:dropLines>`.
       if (hiLowLines === undefined && (kind === "line" || kind === "line3D" || kind === "stock")) {
-        hiLowLines = parseHiLowLines(child);
+        hiLowLines = parseHiLowLines(child)
       }
       // `<c:serLines>` lives on `<c:barChart>` / `<c:ofPieChart>` per
       // the OOXML schema. Hucre's writer authors `<c:barChart>` only,
@@ -439,7 +439,7 @@ export function parseChart(xml: string): Chart | undefined {
       // round-trip the flag too. Same bare-element shape as
       // `<c:dropLines>` / `<c:hiLowLines>`.
       if (serLines === undefined && (kind === "bar" || kind === "ofPie")) {
-        serLines = parseSerLines(child);
+        serLines = parseSerLines(child)
       }
       // `<c:upDownBars>` lives on `CT_LineChart`, `CT_Line3DChart`, and
       // `CT_StockChart` per the OOXML schema. Surface the flag from the
@@ -448,9 +448,9 @@ export function parseChart(xml: string): Chart | undefined {
       // the per-series body, so this is a chart-level toggle. Per-bar
       // styling can layer on later.
       if (upDownBars === undefined && (kind === "line" || kind === "line3D" || kind === "stock")) {
-        const udb = findChild(child, "upDownBars");
+        const udb = findChild(child, "upDownBars")
         if (udb !== undefined) {
-          upDownBars = true;
+          upDownBars = true
           // `<c:gapWidth val="N"/>` (CT_GapAmount, ST_GapAmount) lives
           // inside `<c:upDownBars>` and controls the spacing between the
           // up / down bars themselves. The OOXML default of `150`
@@ -459,7 +459,7 @@ export function parseChart(xml: string): Chart | undefined {
           // `150` mean the same thing on roundtrip. Out-of-range values
           // are dropped rather than clamped so a corrupt template does
           // not silently rewrite as a different gap.
-          upDownBarsGapWidth = parseUpDownBarsGapWidth(udb);
+          upDownBarsGapWidth = parseUpDownBarsGapWidth(udb)
         }
       }
       // `<c:marker>` (the chart-level CT_Boolean variant) lives on
@@ -472,56 +472,56 @@ export function parseChart(xml: string): Chart | undefined {
       // {@link cloneChart} — only an explicit `val="0"` surfaces
       // `false`.
       if (showLineMarkers === undefined && kind === "line") {
-        showLineMarkers = parseShowLineMarkers(child);
+        showLineMarkers = parseShowLineMarkers(child)
       }
-      let localIndex = 0;
+      let localIndex = 0
       for (const ser of childElements(child)) {
-        if (ser.local !== "ser") continue;
-        seriesCount++;
-        series.push(parseSeries(ser, kind, localIndex));
-        localIndex++;
+        if (ser.local !== "ser") continue
+        seriesCount++
+        series.push(parseSeries(ser, kind, localIndex))
+        localIndex++
       }
       // Chart-type-level <c:dLbls> sits as a sibling of <c:ser> inside
       // the chart-type element. Surface the first one we find — combo
       // charts can carry one per kind, but the common case is a single
       // chart-type element so we keep the model flat.
       if (chartLevelLabels === undefined) {
-        const dLbls = findChild(child, "dLbls");
+        const dLbls = findChild(child, "dLbls")
         if (dLbls) {
-          const parsed = parseDataLabels(dLbls);
-          if (parsed) chartLevelLabels = parsed;
+          const parsed = parseDataLabels(dLbls)
+          if (parsed) chartLevelLabels = parsed
         }
       }
     }
-    out.seriesCount = seriesCount;
-    if (series.length > 0) out.series = series;
-    if (barGrouping !== undefined) out.barGrouping = barGrouping;
-    if (lineGrouping !== undefined) out.lineGrouping = lineGrouping;
-    if (areaGrouping !== undefined) out.areaGrouping = areaGrouping;
-    if (chartLevelLabels) out.dataLabels = chartLevelLabels;
-    if (holeSize !== undefined) out.holeSize = holeSize;
-    if (gapWidth !== undefined) out.gapWidth = gapWidth;
-    if (overlap !== undefined) out.overlap = overlap;
-    if (firstSliceAng !== undefined) out.firstSliceAng = firstSliceAng;
-    if (varyColors !== undefined) out.varyColors = varyColors;
-    if (scatterStyle !== undefined) out.scatterStyle = scatterStyle;
-    if (dropLines !== undefined) out.dropLines = dropLines;
-    if (hiLowLines !== undefined) out.hiLowLines = hiLowLines;
-    if (serLines !== undefined) out.serLines = serLines;
-    if (upDownBars !== undefined) out.upDownBars = upDownBars;
-    if (upDownBarsGapWidth !== undefined) out.upDownBarsGapWidth = upDownBarsGapWidth;
-    if (showLineMarkers !== undefined) out.showLineMarkers = showLineMarkers;
+    out.seriesCount = seriesCount
+    if (series.length > 0) out.series = series
+    if (barGrouping !== undefined) out.barGrouping = barGrouping
+    if (lineGrouping !== undefined) out.lineGrouping = lineGrouping
+    if (areaGrouping !== undefined) out.areaGrouping = areaGrouping
+    if (chartLevelLabels) out.dataLabels = chartLevelLabels
+    if (holeSize !== undefined) out.holeSize = holeSize
+    if (gapWidth !== undefined) out.gapWidth = gapWidth
+    if (overlap !== undefined) out.overlap = overlap
+    if (firstSliceAng !== undefined) out.firstSliceAng = firstSliceAng
+    if (varyColors !== undefined) out.varyColors = varyColors
+    if (scatterStyle !== undefined) out.scatterStyle = scatterStyle
+    if (dropLines !== undefined) out.dropLines = dropLines
+    if (hiLowLines !== undefined) out.hiLowLines = hiLowLines
+    if (serLines !== undefined) out.serLines = serLines
+    if (upDownBars !== undefined) out.upDownBars = upDownBars
+    if (upDownBarsGapWidth !== undefined) out.upDownBarsGapWidth = upDownBarsGapWidth
+    if (showLineMarkers !== undefined) out.showLineMarkers = showLineMarkers
 
-    const axes = parseAxes(plotArea);
-    if (axes !== undefined) out.axes = axes;
+    const axes = parseAxes(plotArea)
+    if (axes !== undefined) out.axes = axes
 
     // `<c:dTable>` lives inside `<c:plotArea>` after the axes per
     // CT_PlotArea — the data table renders the underlying series values
     // as a small grid beneath the plot. Only chart families with axes
     // (bar / column / line / area / scatter / surface / stock) carry
     // a slot for it; pie / doughnut have no axes at all.
-    const dataTable = parseDataTable(plotArea);
-    if (dataTable !== undefined) out.dataTable = dataTable;
+    const dataTable = parseDataTable(plotArea)
+    if (dataTable !== undefined) out.dataTable = dataTable
 
     // `<c:plotArea><c:layout><c:manualLayout>` carries Excel's "Format
     // Plot Area -> Position -> Custom" placement. CT_PlotArea places the
@@ -532,8 +532,8 @@ export function parseChart(xml: string): Chart | undefined {
     // placeholder Excel itself emits on auto-layout charts) collapses
     // the field to `undefined` so a fresh chart and a chart that pinned
     // an out-of-range layout both round-trip lossless.
-    const plotAreaLayout = parsePlotAreaLayout(plotArea);
-    if (plotAreaLayout !== undefined) out.plotAreaLayout = plotAreaLayout;
+    const plotAreaLayout = parsePlotAreaLayout(plotArea)
+    if (plotAreaLayout !== undefined) out.plotAreaLayout = plotAreaLayout
 
     // `<c:plotArea><c:spPr><a:solidFill><a:srgbClr val=".."/></a:solidFill>
     // </c:spPr></c:plotArea>` carries Excel's "Format Plot Area -> Fill ->
@@ -544,8 +544,8 @@ export function parseChart(xml: string): Chart | undefined {
     // / `<a:gradFill>` / `<a:pattFill>` / `<a:blipFill>`), and theme-color
     // references (`<a:schemeClr>`) all collapse to `undefined` so a
     // round-trip never fabricates a color Excel cannot render.
-    const plotAreaFillColor = parsePlotAreaFillColor(plotArea);
-    if (plotAreaFillColor !== undefined) out.plotAreaFillColor = plotAreaFillColor;
+    const plotAreaFillColor = parsePlotAreaFillColor(plotArea)
+    if (plotAreaFillColor !== undefined) out.plotAreaFillColor = plotAreaFillColor
 
     // `<c:plotArea><c:spPr><a:ln><a:solidFill><a:srgbClr val=".."/>
     // </a:solidFill></a:ln></c:spPr></c:plotArea>` carries Excel's
@@ -554,8 +554,8 @@ export function parseChart(xml: string): Chart | undefined {
     // (`<a:solidFill>`), per CT_ShapeProperties — the reader scopes the
     // lookup so a stray `<a:ln>` elsewhere (on a series, on an axis)
     // cannot leak into this field.
-    const plotAreaBorderColor = parsePlotAreaBorderColor(plotArea);
-    if (plotAreaBorderColor !== undefined) out.plotAreaBorderColor = plotAreaBorderColor;
+    const plotAreaBorderColor = parsePlotAreaBorderColor(plotArea)
+    if (plotAreaBorderColor !== undefined) out.plotAreaBorderColor = plotAreaBorderColor
 
     // `<c:plotArea><c:spPr><a:ln w="EMU">` carries Excel's "Format Plot
     // Area -> Border -> Width" pin. The OOXML `w` attribute stores the
@@ -566,19 +566,19 @@ export function parseChart(xml: string): Chart | undefined {
     // round-trips through the writer's clamp. Scoped to the plot-area's
     // `<c:spPr>` so a stray `<a:ln w=..>` elsewhere (series stroke,
     // axis line) cannot leak into this field.
-    const plotAreaBorderWidth = parsePlotAreaBorderWidth(plotArea);
-    if (plotAreaBorderWidth !== undefined) out.plotAreaBorderWidth = plotAreaBorderWidth;
+    const plotAreaBorderWidth = parsePlotAreaBorderWidth(plotArea)
+    if (plotAreaBorderWidth !== undefined) out.plotAreaBorderWidth = plotAreaBorderWidth
 
     // `<c:plotArea><c:spPr><a:ln><a:prstDash val=".."/></a:ln></c:spPr>
     // </c:plotArea>` carries Excel's "Format Plot Area -> Border ->
     // Dash type" pin. Same accept-or-drop grammar as every other
     // chart-frame border-dash slot.
-    const plotAreaBorderDash = parseBorderDashFromSpPr(plotArea);
-    if (plotAreaBorderDash !== undefined) out.plotAreaBorderDash = plotAreaBorderDash;
+    const plotAreaBorderDash = parseBorderDashFromSpPr(plotArea)
+    if (plotAreaBorderDash !== undefined) out.plotAreaBorderDash = plotAreaBorderDash
   }
 
-  const legend = parseLegend(chartEl);
-  if (legend !== undefined) out.legend = legend;
+  const legend = parseLegend(chartEl)
+  if (legend !== undefined) out.legend = legend
 
   // `<c:overlay>` is a child of `<c:legend>`, so a chart that hides the
   // legend (legend === false) or omits the element entirely (legend ===
@@ -587,8 +587,8 @@ export function parseChart(xml: string): Chart | undefined {
   // toggle that has no effect. Only attempt the parse when the chart
   // declares a visible legend.
   if (legend !== undefined && legend !== false) {
-    const legendOverlay = parseLegendOverlay(chartEl);
-    if (legendOverlay !== undefined) out.legendOverlay = legendOverlay;
+    const legendOverlay = parseLegendOverlay(chartEl)
+    if (legendOverlay !== undefined) out.legendOverlay = legendOverlay
 
     // `<c:legendEntry>` lives inside `<c:legend>` per CT_Legend
     // (ECMA-376 Part 1, §21.2.2.114) — the element block sits between
@@ -596,8 +596,8 @@ export function parseChart(xml: string): Chart | undefined {
     // missing legend has no slot for entry overrides, so the parser
     // only inspects the children when the chart actually declares a
     // visible legend. Same scoping rule as `legendOverlay`.
-    const legendEntries = parseLegendEntries(chartEl);
-    if (legendEntries !== undefined) out.legendEntries = legendEntries;
+    const legendEntries = parseLegendEntries(chartEl)
+    if (legendEntries !== undefined) out.legendEntries = legendEntries
 
     // `<c:legend><c:txPr>` carries the legend's typography pins —
     // tick-label / axis-title / chart-title style. The CT_Legend schema
@@ -606,27 +606,27 @@ export function parseChart(xml: string): Chart | undefined {
     // parser only inspects it when the chart actually declares a
     // visible legend. Same scoping rule as `legendOverlay` /
     // `legendEntries`.
-    const legendFontSize = parseLegendFontSize(chartEl);
-    if (legendFontSize !== undefined) out.legendFontSize = legendFontSize;
+    const legendFontSize = parseLegendFontSize(chartEl)
+    if (legendFontSize !== undefined) out.legendFontSize = legendFontSize
 
     // Same scoping for the bold flag — `<c:txPr>` is the shared host
     // element, and the OOXML default `false` collapses to `undefined`
     // so absence and `b="0"` round-trip identically.
-    const legendBold = parseLegendBold(chartEl);
-    if (legendBold !== undefined) out.legendBold = legendBold;
+    const legendBold = parseLegendBold(chartEl)
+    if (legendBold !== undefined) out.legendBold = legendBold
 
     // Same scoping for the italic flag — only an explicit `i="1"`
     // surfaces `true`; the OOXML default and absence both collapse to
     // `undefined`.
-    const legendItalic = parseLegendItalic(chartEl);
-    if (legendItalic !== undefined) out.legendItalic = legendItalic;
+    const legendItalic = parseLegendItalic(chartEl)
+    if (legendItalic !== undefined) out.legendItalic = legendItalic
 
     // Same scoping for the underline flag — only an explicit
     // `u="sng"` (Excel's UI variant) surfaces `true`; the OOXML default
     // `"none"` (and every non-`"sng"` variant the schema allows)
     // collapse to `undefined`.
-    const legendUnderline = parseLegendUnderline(chartEl);
-    if (legendUnderline !== undefined) out.legendUnderline = legendUnderline;
+    const legendUnderline = parseLegendUnderline(chartEl)
+    if (legendUnderline !== undefined) out.legendUnderline = legendUnderline
 
     // Same scoping for the strikethrough flag — only an explicit
     // `strike="sngStrike"` (Excel's UI variant — single line) surfaces
@@ -634,22 +634,22 @@ export function parseChart(xml: string): Chart | undefined {
     // `"dblStrike"` (double line) both collapse to `undefined` so a
     // templated chart with the double-line variant round-trips
     // lossless rather than silently downgrading on re-emit.
-    const legendStrikethrough = parseLegendStrikethrough(chartEl);
-    if (legendStrikethrough !== undefined) out.legendStrikethrough = legendStrikethrough;
+    const legendStrikethrough = parseLegendStrikethrough(chartEl)
+    if (legendStrikethrough !== undefined) out.legendStrikethrough = legendStrikethrough
 
     // Same scoping for the font color — `<c:txPr>` is the shared host
     // element. Only the literal `<a:srgbClr val="RRGGBB"/>` round-trips
     // losslessly; theme references / preset colors / malformed val
     // tokens all collapse to `undefined`.
-    const legendFontColor = parseLegendFontColor(chartEl);
-    if (legendFontColor !== undefined) out.legendFontColor = legendFontColor;
+    const legendFontColor = parseLegendFontColor(chartEl)
+    if (legendFontColor !== undefined) out.legendFontColor = legendFontColor
 
     // Same scoping for the font family — `<c:txPr>` is the shared host
     // element. Empty / whitespace-only `typeface` attributes collapse
     // to `undefined` so absence and the empty form round-trip
     // identically through the writer.
-    const legendFontFamily = parseLegendFontFamily(chartEl);
-    if (legendFontFamily !== undefined) out.legendFontFamily = legendFontFamily;
+    const legendFontFamily = parseLegendFontFamily(chartEl)
+    if (legendFontFamily !== undefined) out.legendFontFamily = legendFontFamily
 
     // `<c:legend><c:layout><c:manualLayout>` carries Excel's "Format
     // Legend -> Position -> Custom" placement. CT_Legend places the
@@ -658,8 +658,8 @@ export function parseChart(xml: string): Chart | undefined {
     // off the canonical slot; absence of any meaningful coordinate
     // collapses the field to `undefined` so a fresh chart and a chart
     // that pinned an out-of-range layout both round-trip lossless.
-    const legendLayout = parseLegendLayout(chartEl);
-    if (legendLayout !== undefined) out.legendLayout = legendLayout;
+    const legendLayout = parseLegendLayout(chartEl)
+    if (legendLayout !== undefined) out.legendLayout = legendLayout
 
     // `<c:legend><c:spPr><a:solidFill>` carries Excel's "Format Legend
     // -> Fill -> Solid fill -> Color" picker. CT_Legend places the
@@ -670,8 +670,8 @@ export function parseChart(xml: string): Chart | undefined {
     // `<a:schemeClr>`) drop to `undefined` so a round-trip never
     // fabricates a fill the writer cannot reproduce on emit. Same
     // hidden-legend scoping as the typography knobs.
-    const legendFillColor = parseLegendFillColor(chartEl);
-    if (legendFillColor !== undefined) out.legendFillColor = legendFillColor;
+    const legendFillColor = parseLegendFillColor(chartEl)
+    if (legendFillColor !== undefined) out.legendFillColor = legendFillColor
 
     // `<c:legend><c:spPr><a:ln><a:solidFill>` carries Excel's "Format
     // Legend -> Border -> Solid line -> Color" picker. The `<a:ln>`
@@ -681,8 +681,8 @@ export function parseChart(xml: string): Chart | undefined {
     // axis, on the legend's `<c:txPr>` block) cannot leak into this
     // field. Same hidden-legend scoping as the fill / typography
     // knobs.
-    const legendBorderColor = parseLegendBorderColor(chartEl);
-    if (legendBorderColor !== undefined) out.legendBorderColor = legendBorderColor;
+    const legendBorderColor = parseLegendBorderColor(chartEl)
+    if (legendBorderColor !== undefined) out.legendBorderColor = legendBorderColor
 
     // `<c:legend><c:spPr><a:ln w="EMU">` carries Excel's "Format Legend
     // -> Border -> Width" pin. The OOXML `w` attribute stores the
@@ -695,59 +695,59 @@ export function parseChart(xml: string): Chart | undefined {
     // axis line, plot-area border) cannot leak into this field. Same
     // hidden-legend scoping as the fill / border-color / typography
     // knobs.
-    const legendBorderWidth = parseLegendBorderWidth(chartEl);
-    if (legendBorderWidth !== undefined) out.legendBorderWidth = legendBorderWidth;
+    const legendBorderWidth = parseLegendBorderWidth(chartEl)
+    if (legendBorderWidth !== undefined) out.legendBorderWidth = legendBorderWidth
 
     // `<c:legend><c:spPr><a:ln><a:prstDash val=".."/></a:ln></c:spPr>
     // </c:legend>` carries Excel's "Format Legend -> Border -> Dash
     // type" pin. Same accept-or-drop grammar as every other chart-
     // frame border-dash slot.
-    const legendBorderDash = parseLegendBorderDash(chartEl);
-    if (legendBorderDash !== undefined) out.legendBorderDash = legendBorderDash;
+    const legendBorderDash = parseLegendBorderDash(chartEl)
+    if (legendBorderDash !== undefined) out.legendBorderDash = legendBorderDash
   }
 
-  const dispBlanksAs = parseDispBlanksAs(chartEl);
-  if (dispBlanksAs !== undefined) out.dispBlanksAs = dispBlanksAs;
+  const dispBlanksAs = parseDispBlanksAs(chartEl)
+  if (dispBlanksAs !== undefined) out.dispBlanksAs = dispBlanksAs
 
-  const plotVisOnly = parsePlotVisOnly(chartEl);
-  if (plotVisOnly !== undefined) out.plotVisOnly = plotVisOnly;
+  const plotVisOnly = parsePlotVisOnly(chartEl)
+  if (plotVisOnly !== undefined) out.plotVisOnly = plotVisOnly
 
   // `<c:showDLblsOverMax>` sits at the tail of CT_Chart (after
   // `<c:dispBlanksAs>` and before `<c:extLst>`). Mirrors the writer
   // side, which always emits the element — only the non-default
   // `val="0"` surfaces here (`true` collapses to `undefined` for the
   // standard minimal-shape contract).
-  const showDLblsOverMax = parseShowDLblsOverMax(chartEl);
-  if (showDLblsOverMax !== undefined) out.showDLblsOverMax = showDLblsOverMax;
+  const showDLblsOverMax = parseShowDLblsOverMax(chartEl)
+  if (showDLblsOverMax !== undefined) out.showDLblsOverMax = showDLblsOverMax
 
   // `<c:roundedCorners>` lives on `<c:chartSpace>` (the chart's outer
   // wrapper), not inside `<c:chart>` — the toggle styles the chart
   // frame's outer border rather than the plot area.
-  const roundedCorners = parseRoundedCorners(chartSpace);
-  if (roundedCorners !== undefined) out.roundedCorners = roundedCorners;
+  const roundedCorners = parseRoundedCorners(chartSpace)
+  if (roundedCorners !== undefined) out.roundedCorners = roundedCorners
 
   // `<c:style>` also sits on `<c:chartSpace>` — it picks one of the 48
   // built-in chart-style presets that style the entire chart space
   // (frame fill, plot area look, default text font), not just the
   // plot area.
-  const style = parseStyle(chartSpace);
-  if (style !== undefined) out.style = style;
+  const style = parseStyle(chartSpace)
+  if (style !== undefined) out.style = style
 
   // `<c:lang>` records the editing locale Excel used to author the
   // chart. It also sits on `<c:chartSpace>` (per CT_ChartSpace, between
   // `<c:date1904>` and `<c:roundedCorners>`), not inside `<c:chart>` —
   // the value drives locale-sensitive defaults across the entire chart
   // document.
-  const lang = parseLang(chartSpace);
-  if (lang !== undefined) out.lang = lang;
+  const lang = parseLang(chartSpace)
+  if (lang !== undefined) out.lang = lang
 
   // `<c:date1904>` mirrors the host workbook's date-system toggle for
   // chart date-axis interpretation. It sits at the head of
   // `<c:chartSpace>` (per CT_ChartSpace, before `<c:lang>` and
   // `<c:roundedCorners>`), not inside `<c:chart>` — the toggle governs
   // date interpretation across the whole chart document.
-  const date1904 = parseDate1904(chartSpace);
-  if (date1904 !== undefined) out.date1904 = date1904;
+  const date1904 = parseDate1904(chartSpace)
+  if (date1904 !== undefined) out.date1904 = date1904
 
   // `<c:protection>` (CT_Protection, ECMA-376 Part 1, §21.2.2.142)
   // sits on `<c:chartSpace>` between `<c:style>` / `<c:pivotSource>`
@@ -757,8 +757,8 @@ export function parseChart(xml: string): Chart | undefined {
   // children are required) every protection flag is independently
   // optional, so the reader only surfaces the ones the file actually
   // pinned.
-  const protection = parseProtection(chartSpace);
-  if (protection !== undefined) out.protection = protection;
+  const protection = parseProtection(chartSpace)
+  if (protection !== undefined) out.protection = protection
 
   // `<c:view3D>` (CT_View3D, ECMA-376 Part 1, §21.2.2.228) sits on
   // `<c:chart>` between `<c:autoTitleDeleted>` / `<c:pivotFmts>` and
@@ -770,8 +770,8 @@ export function parseChart(xml: string): Chart | undefined {
   // it on every CT_Chart, so the reader looks for it on every chart —
   // a stray element on a 2D chart still surfaces here so the round-
   // trip through cloneChart stays lossless.
-  const view3D = parseView3D(chartEl);
-  if (view3D !== undefined) out.view3D = view3D;
+  const view3D = parseView3D(chartEl)
+  if (view3D !== undefined) out.view3D = view3D
 
   // `<c:floor>` (CT_Surface, ECMA-376 Part 1, §21.2.2.69) sits on
   // `<c:chart>` between `<c:view3D>` and `<c:sideWall>` /
@@ -782,8 +782,8 @@ export function parseChart(xml: string): Chart | undefined {
   // CT_Chart even though it is only meaningful on 3D families, so a
   // stray element on a 2D chart still surfaces the value for round-
   // trip parity.
-  const floorThickness = parseFloorThickness(chartEl);
-  if (floorThickness !== undefined) out.floorThickness = floorThickness;
+  const floorThickness = parseFloorThickness(chartEl)
+  if (floorThickness !== undefined) out.floorThickness = floorThickness
 
   // `<c:sideWall>` (CT_Surface, ECMA-376 Part 1, §21.2.2.187) sits on
   // `<c:chart>` between `<c:floor>` and `<c:backWall>` /
@@ -794,8 +794,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `<c:sideWall>` on every CT_Chart even though it is only
   // meaningful on 3D families, so a stray element on a 2D chart still
   // surfaces the value for round-trip parity.
-  const sideWallThickness = parseSideWallThickness(chartEl);
-  if (sideWallThickness !== undefined) out.sideWallThickness = sideWallThickness;
+  const sideWallThickness = parseSideWallThickness(chartEl)
+  if (sideWallThickness !== undefined) out.sideWallThickness = sideWallThickness
 
   // `<c:backWall>` (CT_Surface, ECMA-376 Part 1, §21.2.2.31) sits on
   // `<c:chart>` between `<c:sideWall>` and `<c:plotArea>` per CT_Chart.
@@ -805,8 +805,8 @@ export function parseChart(xml: string): Chart | undefined {
   // schema accepts `<c:backWall>` on every CT_Chart even though it is
   // only meaningful on 3D families, so a stray element on a 2D chart
   // still surfaces the value for round-trip parity.
-  const backWallThickness = parseBackWallThickness(chartEl);
-  if (backWallThickness !== undefined) out.backWallThickness = backWallThickness;
+  const backWallThickness = parseBackWallThickness(chartEl)
+  if (backWallThickness !== undefined) out.backWallThickness = backWallThickness
 
   // `<c:chartSpace><c:spPr><a:solidFill><a:srgbClr val=".."/></a:solidFill>
   // </c:spPr></c:chartSpace>` carries Excel's "Format Chart Area -> Fill
@@ -819,8 +819,8 @@ export function parseChart(xml: string): Chart | undefined {
   // `<a:gradFill>` / `<a:pattFill>` / `<a:blipFill>`), and theme-color
   // references (`<a:schemeClr>`) all collapse to `undefined` so a
   // round-trip never fabricates a color Excel cannot render.
-  const chartSpaceFillColor = parseChartSpaceFillColor(chartSpace);
-  if (chartSpaceFillColor !== undefined) out.chartSpaceFillColor = chartSpaceFillColor;
+  const chartSpaceFillColor = parseChartSpaceFillColor(chartSpace)
+  if (chartSpaceFillColor !== undefined) out.chartSpaceFillColor = chartSpaceFillColor
 
   // `<c:chartSpace><c:spPr><a:ln><a:solidFill><a:srgbClr val=".."/>
   // </a:solidFill></a:ln></c:spPr></c:chartSpace>` carries Excel's
@@ -830,26 +830,26 @@ export function parseChart(xml: string): Chart | undefined {
   // `<a:srgbClr>` form so absence, malformed hex tokens, non-solid line
   // fills, and theme-color references all collapse to `undefined` so a
   // round-trip never fabricates a stroke Excel cannot render.
-  const chartSpaceBorderColor = parseChartSpaceBorderColor(chartSpace);
-  if (chartSpaceBorderColor !== undefined) out.chartSpaceBorderColor = chartSpaceBorderColor;
+  const chartSpaceBorderColor = parseChartSpaceBorderColor(chartSpace)
+  if (chartSpaceBorderColor !== undefined) out.chartSpaceBorderColor = chartSpaceBorderColor
 
   // `<c:chartSpace><c:spPr><a:ln w="EMU">` carries Excel's "Format
   // Chart Area -> Border -> Width" pin. Same EMU encoding and clamp /
   // snap grammar as every other chart-frame border-width slot. Scoped
   // to direct children of `<c:chartSpace>` so a stray `<a:ln w=..>`
   // elsewhere cannot leak in.
-  const chartSpaceBorderWidth = parseBorderWidthFromSpPr(chartSpace);
-  if (chartSpaceBorderWidth !== undefined) out.chartSpaceBorderWidth = chartSpaceBorderWidth;
+  const chartSpaceBorderWidth = parseBorderWidthFromSpPr(chartSpace)
+  if (chartSpaceBorderWidth !== undefined) out.chartSpaceBorderWidth = chartSpaceBorderWidth
 
   // `<c:chartSpace><c:spPr><a:ln><a:prstDash val=".."/>` carries
   // Excel's "Format Chart Area -> Border -> Dash type" pin. Same
   // accept-or-drop grammar as every other chart-frame border-dash
   // slot — `"solid"` collapses to `undefined` so absence and the OOXML
   // default round-trip identically.
-  const chartSpaceBorderDash = parseBorderDashFromSpPr(chartSpace);
-  if (chartSpaceBorderDash !== undefined) out.chartSpaceBorderDash = chartSpaceBorderDash;
+  const chartSpaceBorderDash = parseBorderDashFromSpPr(chartSpace)
+  if (chartSpaceBorderDash !== undefined) out.chartSpaceBorderDash = chartSpaceBorderDash
 
-  return out;
+  return out
 }
 
 // ── Legend ────────────────────────────────────────────────────────
@@ -887,7 +887,7 @@ export function parseChart(xml: string): Chart | undefined {
  * <a:srgbClr>` chain on a different host element.
  */
 function parseChartSpaceFillColor(chartSpace: XmlElement): string | undefined {
-  return parseSpPrFill(chartSpace);
+  return parseSpPrFill(chartSpace)
 }
 
 /**
@@ -924,7 +924,7 @@ function parseChartSpaceFillColor(chartSpace: XmlElement): string | undefined {
  * host element.
  */
 function parseChartSpaceBorderColor(chartSpace: XmlElement): string | undefined {
-  return parseSpPrBorderColor(chartSpace);
+  return parseSpPrBorderColor(chartSpace)
 }
 
 // ── Title Font Family ───────────────────────────────────────────────
@@ -943,21 +943,21 @@ function parseChartSpaceBorderColor(chartSpace: XmlElement): string | undefined 
  * fabricate a token Excel rejects.
  */
 function parseDispBlanksAs(chartEl: XmlElement): ChartDisplayBlanksAs | undefined {
-  const el = findChild(chartEl, "dispBlanksAs");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartEl, "dispBlanksAs")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "zero":
-      return "zero";
+      return "zero"
     case "span":
-      return "span";
+      return "span"
     case "gap":
       // OOXML default — collapse to undefined for symmetry with the
       // writer's `dispBlanksAs` field.
-      return undefined;
+      return undefined
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -975,21 +975,21 @@ function parseDispBlanksAs(chartEl: XmlElement): ChartDisplayBlanksAs | undefine
  * to `undefined` rather than fabricate a flag Excel would not emit.
  */
 function parsePlotVisOnly(chartEl: XmlElement): boolean | undefined {
-  const el = findChild(chartEl, "plotVisOnly");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartEl, "plotVisOnly")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "0":
     case "false":
-      return false;
+      return false
     case "1":
     case "true":
       // OOXML default — collapse to undefined for symmetry with the
       // writer's `plotVisOnly` field.
-      return undefined;
+      return undefined
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -1013,21 +1013,21 @@ function parsePlotVisOnly(chartEl: XmlElement): boolean | undefined {
  * elements does not matter.
  */
 function parseShowDLblsOverMax(chartEl: XmlElement): boolean | undefined {
-  const el = findChild(chartEl, "showDLblsOverMax");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartEl, "showDLblsOverMax")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "0":
     case "false":
-      return false;
+      return false
     case "1":
     case "true":
       // OOXML default — collapse to undefined for symmetry with the
       // writer's `showDLblsOverMax` field.
-      return undefined;
+      return undefined
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -1049,21 +1049,21 @@ function parseShowDLblsOverMax(chartEl: XmlElement): boolean | undefined {
  * the plot area, and the OOXML schema reflects that with the placement.
  */
 function parseRoundedCorners(chartSpace: XmlElement): boolean | undefined {
-  const el = findChild(chartSpace, "roundedCorners");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartSpace, "roundedCorners")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
       // OOXML default — collapse to undefined for symmetry with the
       // writer's `roundedCorners` field.
-      return undefined;
+      return undefined
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -1088,18 +1088,18 @@ function parseRoundedCorners(chartSpace: XmlElement): boolean | undefined {
  * and before `<c:chart>`.
  */
 function parseStyle(chartSpace: XmlElement): number | undefined {
-  const el = findChild(chartSpace, "style");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartSpace, "style")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   // Strict integer parse — `parseInt` would accept `"3px"` / `"3.5"`,
   // either of which is outside the `xsd:unsignedByte` shape `<c:style>`
   // expects per CT_Style.
-  if (!/^\d+$/.test(raw)) return undefined;
-  const n = Number(raw);
-  if (!Number.isInteger(n)) return undefined;
-  if (n < 1 || n > 48) return undefined;
-  return n;
+  if (!/^\d+$/.test(raw)) return undefined
+  const n = Number(raw)
+  if (!Number.isInteger(n)) return undefined
+  if (n < 1 || n > 48) return undefined
+  return n
 }
 
 // ── Editing Locale ────────────────────────────────────────────────
@@ -1124,18 +1124,18 @@ function parseStyle(chartSpace: XmlElement): number | undefined {
  * the entire chart document, not just the plot area.
  */
 function parseLang(chartSpace: XmlElement): string | undefined {
-  const el = findChild(chartSpace, "lang");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartSpace, "lang")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   // Strict shape check — Excel's `<c:lang>` is `xsd:language`
   // (RFC-1766 / BCP-47 culture name). The pattern matches a primary
   // 2- / 3-letter language tag plus zero or more `-`-separated 2–8
   // alphanumeric subtags, which covers everything Excel emits
   // (`en-US`, `tr-TR`, `pt-BR`, `zh-Hans-CN`, …) without admitting
   // raw garbage like `"english"` or `"en US"`.
-  if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(raw)) return undefined;
-  return raw;
+  if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(raw)) return undefined
+  return raw
 }
 
 // ── Date System ────────────────────────────────────────────────────
@@ -1160,21 +1160,21 @@ function parseLang(chartSpace: XmlElement): string | undefined {
  * just the plot area.
  */
 function parseDate1904(chartSpace: XmlElement): boolean | undefined {
-  const el = findChild(chartSpace, "date1904");
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(chartSpace, "date1904")
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
       // OOXML default — collapse to undefined for symmetry with the
       // writer's `date1904` field.
-      return undefined;
+      return undefined
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -1203,20 +1203,20 @@ function parseDate1904(chartSpace: XmlElement): boolean | undefined {
  * literally instead of silently disappearing through the parse loop.
  */
 function parseProtection(chartSpace: XmlElement): ChartProtection | undefined {
-  const el = findChild(chartSpace, "protection");
-  if (!el) return undefined;
-  const out: ChartProtection = {};
-  const chartObject = parseProtectionFlag(el, "chartObject");
-  if (chartObject !== undefined) out.chartObject = chartObject;
-  const data = parseProtectionFlag(el, "data");
-  if (data !== undefined) out.data = data;
-  const formatting = parseProtectionFlag(el, "formatting");
-  if (formatting !== undefined) out.formatting = formatting;
-  const selection = parseProtectionFlag(el, "selection");
-  if (selection !== undefined) out.selection = selection;
-  const userInterface = parseProtectionFlag(el, "userInterface");
-  if (userInterface !== undefined) out.userInterface = userInterface;
-  return out;
+  const el = findChild(chartSpace, "protection")
+  if (!el) return undefined
+  const out: ChartProtection = {}
+  const chartObject = parseProtectionFlag(el, "chartObject")
+  if (chartObject !== undefined) out.chartObject = chartObject
+  const data = parseProtectionFlag(el, "data")
+  if (data !== undefined) out.data = data
+  const formatting = parseProtectionFlag(el, "formatting")
+  if (formatting !== undefined) out.formatting = formatting
+  const selection = parseProtectionFlag(el, "selection")
+  if (selection !== undefined) out.selection = selection
+  const userInterface = parseProtectionFlag(el, "userInterface")
+  if (userInterface !== undefined) out.userInterface = userInterface
+  return out
 }
 
 /**
@@ -1228,19 +1228,19 @@ function parseProtection(chartSpace: XmlElement): ChartProtection | undefined {
  * `<xsd:boolean>` lexical-space rule.
  */
 function parseProtectionFlag(protection: XmlElement, local: string): boolean | undefined {
-  const el = findChild(protection, local);
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(protection, local)
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
-      return false;
+      return false
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -1266,25 +1266,25 @@ function parseProtectionFlag(protection: XmlElement, local: string): boolean | u
 
 function findChild(el: XmlElement, localName: string): XmlElement | undefined {
   for (const c of el.children) {
-    if (typeof c !== "string" && c.local === localName) return c;
+    if (typeof c !== "string" && c.local === localName) return c
   }
-  return undefined;
+  return undefined
 }
 
 function findDescendant(el: XmlElement, localName: string): XmlElement | undefined {
-  if (el.local === localName) return el;
+  if (el.local === localName) return el
   for (const c of el.children) {
-    if (typeof c === "string") continue;
-    const hit = findDescendant(c, localName);
-    if (hit) return hit;
+    if (typeof c === "string") continue
+    const hit = findDescendant(c, localName)
+    if (hit) return hit
   }
-  return undefined;
+  return undefined
 }
 
 function childElements(el: XmlElement): XmlElement[] {
-  const out: XmlElement[] = [];
+  const out: XmlElement[] = []
   for (const c of el.children) {
-    if (typeof c !== "string") out.push(c);
+    if (typeof c !== "string") out.push(c)
   }
-  return out;
+  return out
 }

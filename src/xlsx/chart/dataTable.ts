@@ -10,9 +10,9 @@
 // `chart-clone.ts` because its signature is shape-incompatible with the
 // writer-side single-arg resolver.
 
-import type { ChartBorderDash, ChartDataTable, SheetChart } from "../../_types";
-import type { XmlElement } from "../../xml/parser";
-import { xmlElement, xmlSelfClose } from "../../xml/writer";
+import type { ChartBorderDash, ChartDataTable, SheetChart } from "../../_types"
+import type { XmlElement } from "../../xml/parser"
+import { xmlElement, xmlSelfClose } from "../../xml/writer"
 import {
   EMU_PER_PT,
   clampStrokeWidthPt,
@@ -22,14 +22,14 @@ import {
   parseBorderWidthFromSpPr,
   parseSpPrBorderColor,
   parseSpPrFill,
-} from "./shape";
-import { findChild } from "./util";
-import { FONT_SIZE_MAX_PT, FONT_SIZE_MIN_PT, FONT_SZ_PER_POINT } from "./text";
-import { normalizeTitleColor, normalizeTitleFontSize } from "./title";
+} from "./shape"
+import { findChild } from "./util"
+import { FONT_SIZE_MAX_PT, FONT_SIZE_MIN_PT, FONT_SZ_PER_POINT } from "./text"
+import { normalizeTitleColor, normalizeTitleFontSize } from "./title"
 
-const TITLE_FONT_SZ_PER_POINT = FONT_SZ_PER_POINT;
-const TITLE_FONT_SIZE_MIN_PT = FONT_SIZE_MIN_PT;
-const TITLE_FONT_SIZE_MAX_PT = FONT_SIZE_MAX_PT;
+const TITLE_FONT_SZ_PER_POINT = FONT_SZ_PER_POINT
+const TITLE_FONT_SIZE_MIN_PT = FONT_SIZE_MIN_PT
+const TITLE_FONT_SIZE_MAX_PT = FONT_SIZE_MAX_PT
 
 // ── Reader ────────────────────────────────────────────────────────
 
@@ -48,48 +48,48 @@ const TITLE_FONT_SIZE_MAX_PT = FONT_SIZE_MAX_PT;
  * (`true` for every child) on round-trip.
  */
 export function parseDataTable(plotArea: XmlElement): ChartDataTable | undefined {
-  const el = findChild(plotArea, "dTable");
-  if (!el) return undefined;
-  const out: ChartDataTable = {};
-  const showHorzBorder = parseDataTableFlag(el, "showHorzBorder");
-  if (showHorzBorder !== undefined) out.showHorzBorder = showHorzBorder;
-  const showVertBorder = parseDataTableFlag(el, "showVertBorder");
-  if (showVertBorder !== undefined) out.showVertBorder = showVertBorder;
-  const showOutline = parseDataTableFlag(el, "showOutline");
-  if (showOutline !== undefined) out.showOutline = showOutline;
-  const showKeys = parseDataTableFlag(el, "showKeys");
-  if (showKeys !== undefined) out.showKeys = showKeys;
-  const fontSize = parseDataTableFontSize(el);
-  if (fontSize !== undefined) out.fontSize = fontSize;
-  const fontColor = parseDataTableFontColor(el);
-  if (fontColor !== undefined) out.fontColor = fontColor;
-  const bold = parseDataTableBold(el);
-  if (bold !== undefined) out.bold = bold;
-  const italic = parseDataTableItalic(el);
-  if (italic !== undefined) out.italic = italic;
-  const underline = parseDataTableUnderline(el);
-  if (underline !== undefined) out.underline = underline;
-  const strikethrough = parseDataTableStrikethrough(el);
-  if (strikethrough !== undefined) out.strikethrough = strikethrough;
-  const fontFamily = parseDataTableFontFamily(el);
-  if (fontFamily !== undefined) out.fontFamily = fontFamily;
-  const fillColor = parseDataTableFillColor(el);
-  if (fillColor !== undefined) out.fillColor = fillColor;
-  const borderColor = parseDataTableBorderColor(el);
-  if (borderColor !== undefined) out.borderColor = borderColor;
+  const el = findChild(plotArea, "dTable")
+  if (!el) return undefined
+  const out: ChartDataTable = {}
+  const showHorzBorder = parseDataTableFlag(el, "showHorzBorder")
+  if (showHorzBorder !== undefined) out.showHorzBorder = showHorzBorder
+  const showVertBorder = parseDataTableFlag(el, "showVertBorder")
+  if (showVertBorder !== undefined) out.showVertBorder = showVertBorder
+  const showOutline = parseDataTableFlag(el, "showOutline")
+  if (showOutline !== undefined) out.showOutline = showOutline
+  const showKeys = parseDataTableFlag(el, "showKeys")
+  if (showKeys !== undefined) out.showKeys = showKeys
+  const fontSize = parseDataTableFontSize(el)
+  if (fontSize !== undefined) out.fontSize = fontSize
+  const fontColor = parseDataTableFontColor(el)
+  if (fontColor !== undefined) out.fontColor = fontColor
+  const bold = parseDataTableBold(el)
+  if (bold !== undefined) out.bold = bold
+  const italic = parseDataTableItalic(el)
+  if (italic !== undefined) out.italic = italic
+  const underline = parseDataTableUnderline(el)
+  if (underline !== undefined) out.underline = underline
+  const strikethrough = parseDataTableStrikethrough(el)
+  if (strikethrough !== undefined) out.strikethrough = strikethrough
+  const fontFamily = parseDataTableFontFamily(el)
+  if (fontFamily !== undefined) out.fontFamily = fontFamily
+  const fillColor = parseDataTableFillColor(el)
+  if (fillColor !== undefined) out.fillColor = fillColor
+  const borderColor = parseDataTableBorderColor(el)
+  if (borderColor !== undefined) out.borderColor = borderColor
   // `<c:dTable><c:spPr><a:ln w="EMU">` carries Excel's "Format Data
   // Table -> Border -> Width" pin. Delegates to the shared
   // {@link parseBorderWidthFromSpPr} so the EMU encoding and snap /
   // clamp grammar match every other chart-frame border-width slot.
-  const borderWidth = parseBorderWidthFromSpPr(el);
-  if (borderWidth !== undefined) out.borderWidth = borderWidth;
+  const borderWidth = parseBorderWidthFromSpPr(el)
+  if (borderWidth !== undefined) out.borderWidth = borderWidth
   // `<c:dTable><c:spPr><a:ln><a:prstDash val=".."/>` carries Excel's
   // "Format Data Table -> Border -> Dash type" pin. Delegates to the
   // shared {@link parseBorderDashFromSpPr} so the accept-or-drop
   // grammar matches every chart-frame border-dash slot.
-  const borderDash = parseBorderDashFromSpPr(el);
-  if (borderDash !== undefined) out.borderDash = borderDash;
-  return out;
+  const borderDash = parseBorderDashFromSpPr(el)
+  if (borderDash !== undefined) out.borderDash = borderDash
+  return out
 }
 
 /**
@@ -106,25 +106,25 @@ export function parseDataTable(plotArea: XmlElement): ChartDataTable | undefined
  * writer's emit path.
  */
 export function parseDataTableBold(dTable: XmlElement): boolean | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const raw = defRPr.attrs.b;
-  if (typeof raw !== "string") return undefined;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const raw = defRPr.attrs.b
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
-      return false;
+      return false
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -146,25 +146,25 @@ export function parseDataTableBold(dTable: XmlElement): boolean | undefined {
  * back into the writer's emit path.
  */
 export function parseDataTableItalic(dTable: XmlElement): boolean | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const raw = defRPr.attrs.i;
-  if (typeof raw !== "string") return undefined;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const raw = defRPr.attrs.i
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
-      return false;
+      return false
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -194,18 +194,18 @@ export function parseDataTableItalic(dTable: XmlElement): boolean | undefined {
  * writer's emit path.
  */
 export function parseDataTableUnderline(dTable: XmlElement): boolean | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const raw = defRPr.attrs.u;
-  if (raw === "sng") return true;
-  if (raw === "none") return false;
-  return undefined;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const raw = defRPr.attrs.u
+  if (raw === "sng") return true
+  if (raw === "none") return false
+  return undefined
 }
 
 /**
@@ -227,17 +227,17 @@ export function parseDataTableUnderline(dTable: XmlElement): boolean | undefined
  * slots straight back into the writer's emit path.
  */
 export function parseDataTableStrikethrough(dTable: XmlElement): boolean | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const raw = defRPr.attrs.strike;
-  if (raw === "sngStrike") return true;
-  return undefined;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const raw = defRPr.attrs.strike
+  if (raw === "sngStrike") return true
+  return undefined
 }
 
 /**
@@ -262,21 +262,21 @@ export function parseDataTableStrikethrough(dTable: XmlElement): boolean | undef
  * so a parsed value slots straight back into the writer's emit path.
  */
 export function parseDataTableFontFamily(dTable: XmlElement): string | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const latin = findChild(defRPr, "latin");
-  if (!latin) return undefined;
-  const raw = latin.attrs.typeface;
-  if (typeof raw !== "string") return undefined;
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) return undefined;
-  return trimmed;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const latin = findChild(defRPr, "latin")
+  if (!latin) return undefined
+  const raw = latin.attrs.typeface
+  if (typeof raw !== "string") return undefined
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return undefined
+  return trimmed
 }
 
 /**
@@ -316,7 +316,7 @@ export function parseDataTableFontFamily(dTable: XmlElement): string | undefined
  * both knobs without conflict.
  */
 export function parseDataTableFillColor(dTable: XmlElement): string | undefined {
-  return parseSpPrFill(dTable);
+  return parseSpPrFill(dTable)
 }
 
 /**
@@ -356,7 +356,7 @@ export function parseDataTableFillColor(dTable: XmlElement): string | undefined 
  * child.
  */
 export function parseDataTableBorderColor(dTable: XmlElement): string | undefined {
-  return parseSpPrBorderColor(dTable);
+  return parseSpPrBorderColor(dTable)
 }
 
 /**
@@ -379,19 +379,19 @@ export function parseDataTableBorderColor(dTable: XmlElement): string | undefine
  * writer's emit path.
  */
 export function parseDataTableFontColor(dTable: XmlElement): string | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const solidFill = findChild(defRPr, "solidFill");
-  if (!solidFill) return undefined;
-  const srgbClr = findChild(solidFill, "srgbClr");
-  if (!srgbClr) return undefined;
-  return normalizeRgbHex(srgbClr.attrs.val);
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const solidFill = findChild(defRPr, "solidFill")
+  if (!solidFill) return undefined
+  const srgbClr = findChild(solidFill, "srgbClr")
+  if (!srgbClr) return undefined
+  return normalizeRgbHex(srgbClr.attrs.val)
 }
 
 /**
@@ -410,29 +410,29 @@ export function parseDataTableFontColor(dTable: XmlElement): string | undefined 
  * the writer's emit path.
  */
 export function parseDataTableFontSize(dTable: XmlElement): number | undefined {
-  const txPr = findChild(dTable, "txPr");
-  if (!txPr) return undefined;
-  const p = findChild(txPr, "p");
-  if (!p) return undefined;
-  const pPr = findChild(p, "pPr");
-  if (!pPr) return undefined;
-  const defRPr = findChild(pPr, "defRPr");
-  if (!defRPr) return undefined;
-  const raw = defRPr.attrs.sz;
-  if (typeof raw !== "string") return undefined;
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) return undefined;
-  const parsed = Number.parseInt(trimmed, 10);
-  if (!Number.isFinite(parsed)) return undefined;
+  const txPr = findChild(dTable, "txPr")
+  if (!txPr) return undefined
+  const p = findChild(txPr, "p")
+  if (!p) return undefined
+  const pPr = findChild(p, "pPr")
+  if (!pPr) return undefined
+  const defRPr = findChild(pPr, "defRPr")
+  if (!defRPr) return undefined
+  const raw = defRPr.attrs.sz
+  if (typeof raw !== "string") return undefined
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return undefined
+  const parsed = Number.parseInt(trimmed, 10)
+  if (!Number.isFinite(parsed)) return undefined
   // Convert from 100ths of a point to points, rounding to the nearest
   // 0.5pt to match the granularity Excel's UI exposes. Mirrors the
   // chart-title / axis-title / tick-label / legend / data-label
   // sibling parsers exactly so a parsed value flows through every
   // typography slot without bookkeeping the units.
-  const halfSteps = Math.round((parsed / TITLE_FONT_SZ_PER_POINT) * 2);
-  const points = halfSteps / 2;
-  if (points < TITLE_FONT_SIZE_MIN_PT || points > TITLE_FONT_SIZE_MAX_PT) return undefined;
-  return points;
+  const halfSteps = Math.round((parsed / TITLE_FONT_SZ_PER_POINT) * 2)
+  const points = halfSteps / 2
+  if (points < TITLE_FONT_SIZE_MIN_PT || points > TITLE_FONT_SIZE_MAX_PT) return undefined
+  return points
 }
 
 /**
@@ -443,19 +443,19 @@ export function parseDataTableFontSize(dTable: XmlElement): number | undefined {
  * not pin.
  */
 export function parseDataTableFlag(dTable: XmlElement, local: string): boolean | undefined {
-  const el = findChild(dTable, local);
-  if (!el) return undefined;
-  const raw = el.attrs.val;
-  if (typeof raw !== "string") return undefined;
+  const el = findChild(dTable, local)
+  if (!el) return undefined
+  const raw = el.attrs.val
+  if (typeof raw !== "string") return undefined
   switch (raw) {
     case "1":
     case "true":
-      return true;
+      return true
     case "0":
     case "false":
-      return false;
+      return false
     default:
-      return undefined;
+      return undefined
   }
 }
 
@@ -480,31 +480,31 @@ export function parseDataTableFlag(dTable: XmlElement, local: string): boolean |
  */
 export function resolveDataTable(chart: SheetChart):
   | {
-      showHorzBorder: boolean;
-      showVertBorder: boolean;
-      showOutline: boolean;
-      showKeys: boolean;
-      fontSize: number | undefined;
-      fontColor: string | undefined;
-      bold: boolean | undefined;
-      italic: boolean | undefined;
-      underline: boolean | undefined;
-      strikethrough: boolean | undefined;
-      fontFamily: string | undefined;
-      fillColor: string | undefined;
-      borderColor: string | undefined;
-      borderWidth: number | undefined;
-      borderDash: ChartBorderDash | undefined;
+      showHorzBorder: boolean
+      showVertBorder: boolean
+      showOutline: boolean
+      showKeys: boolean
+      fontSize: number | undefined
+      fontColor: string | undefined
+      bold: boolean | undefined
+      italic: boolean | undefined
+      underline: boolean | undefined
+      strikethrough: boolean | undefined
+      fontFamily: string | undefined
+      fillColor: string | undefined
+      borderColor: string | undefined
+      borderWidth: number | undefined
+      borderDash: ChartBorderDash | undefined
     }
   | undefined {
   // Pie / doughnut have no axes — the OOXML schema places `<c:dTable>`
   // alongside `<c:catAx>` / `<c:valAx>`, so there is no slot for it on
   // those families. Drop the field silently rather than emit an element
   // Excel's strict validator would reject.
-  if (chart.type === "pie" || chart.type === "doughnut") return undefined;
+  if (chart.type === "pie" || chart.type === "doughnut") return undefined
 
-  const raw = chart.dataTable;
-  if (raw === undefined || raw === false) return undefined;
+  const raw = chart.dataTable
+  if (raw === undefined || raw === false) return undefined
 
   if (raw === true) {
     return {
@@ -523,7 +523,7 @@ export function resolveDataTable(chart: SheetChart):
       borderColor: undefined,
       borderWidth: undefined,
       borderDash: undefined,
-    };
+    }
   }
 
   // Per-field overrides on top of the `true` defaults. Only literal
@@ -546,7 +546,7 @@ export function resolveDataTable(chart: SheetChart):
     borderColor: resolveDataTableBorderColor(raw.borderColor),
     borderWidth: clampStrokeWidthPt(raw.borderWidth),
     borderDash: normalizeBorderDash(raw.borderDash),
-  };
+  }
 }
 
 /**
@@ -562,7 +562,7 @@ export function resolveDataTable(chart: SheetChart):
  * a point at emit time).
  */
 export function resolveDataTableFontSize(value: number | undefined): number | undefined {
-  return normalizeTitleFontSize(value);
+  return normalizeTitleFontSize(value)
 }
 
 /**
@@ -578,7 +578,7 @@ export function resolveDataTableFontSize(value: number | undefined): number | un
  * exactly.
  */
 export function resolveDataTableFontColor(value: string | undefined): string | undefined {
-  return normalizeTitleColor(value);
+  return normalizeTitleColor(value)
 }
 
 /**
@@ -593,9 +593,9 @@ export function resolveDataTableFontColor(value: string | undefined): string | u
  * `undefined`.
  */
 export function resolveDataTableBold(value: boolean | undefined): boolean | undefined {
-  if (value === true) return true;
-  if (value === false) return false;
-  return undefined;
+  if (value === true) return true
+  if (value === false) return false
+  return undefined
 }
 
 /**
@@ -610,9 +610,9 @@ export function resolveDataTableBold(value: boolean | undefined): boolean | unde
  * untyped caller) collapse to `undefined`.
  */
 export function resolveDataTableItalic(value: boolean | undefined): boolean | undefined {
-  if (value === true) return true;
-  if (value === false) return false;
-  return undefined;
+  if (value === true) return true
+  if (value === false) return false
+  return undefined
 }
 
 /**
@@ -629,9 +629,9 @@ export function resolveDataTableItalic(value: boolean | undefined): boolean | un
  * `u="none"` at emit time.
  */
 export function resolveDataTableUnderline(value: boolean | undefined): boolean | undefined {
-  if (value === true) return true;
-  if (value === false) return false;
-  return undefined;
+  if (value === true) return true
+  if (value === false) return false
+  return undefined
 }
 
 /**
@@ -650,8 +650,8 @@ export function resolveDataTableUnderline(value: boolean | undefined): boolean |
  * `resolveDataLabelsStrikethrough` land on their `<a:defRPr>` slots.
  */
 export function resolveDataTableStrikethrough(value: boolean | undefined): boolean | undefined {
-  if (value === true) return true;
-  return undefined;
+  if (value === true) return true
+  return undefined
 }
 
 /**
@@ -667,10 +667,10 @@ export function resolveDataTableStrikethrough(value: boolean | undefined): boole
  * through every typography slot Excel exposes.
  */
 export function resolveDataTableFontFamily(value: string | undefined): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim();
-  if (trimmed.length === 0) return undefined;
-  return trimmed;
+  if (typeof value !== "string") return undefined
+  const trimmed = value.trim()
+  if (trimmed.length === 0) return undefined
+  return trimmed
 }
 
 /**
@@ -689,7 +689,7 @@ export function resolveDataTableFontFamily(value: string | undefined): string | 
  * that carries {@link ChartDataTable.fontColor}.
  */
 export function resolveDataTableFillColor(value: string | undefined): string | undefined {
-  return normalizeTitleColor(value);
+  return normalizeTitleColor(value)
 }
 
 /**
@@ -711,7 +711,7 @@ export function resolveDataTableFillColor(value: string | undefined): string | u
  * own `<c:spPr>` block.
  */
 export function resolveDataTableBorderColor(value: string | undefined): string | undefined {
-  return normalizeTitleColor(value);
+  return normalizeTitleColor(value)
 }
 
 /**
@@ -731,28 +731,28 @@ export function resolveDataTableBorderColor(value: string | undefined): string |
  * extension styling yet.
  */
 export function buildDataTable(table: {
-  showHorzBorder: boolean;
-  showVertBorder: boolean;
-  showOutline: boolean;
-  showKeys: boolean;
-  fontSize: number | undefined;
-  fontColor: string | undefined;
-  bold: boolean | undefined;
-  italic: boolean | undefined;
-  underline: boolean | undefined;
-  strikethrough: boolean | undefined;
-  fontFamily: string | undefined;
-  fillColor: string | undefined;
-  borderColor: string | undefined;
-  borderWidth: number | undefined;
-  borderDash: ChartBorderDash | undefined;
+  showHorzBorder: boolean
+  showVertBorder: boolean
+  showOutline: boolean
+  showKeys: boolean
+  fontSize: number | undefined
+  fontColor: string | undefined
+  bold: boolean | undefined
+  italic: boolean | undefined
+  underline: boolean | undefined
+  strikethrough: boolean | undefined
+  fontFamily: string | undefined
+  fillColor: string | undefined
+  borderColor: string | undefined
+  borderWidth: number | undefined
+  borderDash: ChartBorderDash | undefined
 }): string {
   const children: string[] = [
     xmlSelfClose("c:showHorzBorder", { val: table.showHorzBorder ? 1 : 0 }),
     xmlSelfClose("c:showVertBorder", { val: table.showVertBorder ? 1 : 0 }),
     xmlSelfClose("c:showOutline", { val: table.showOutline ? 1 : 0 }),
     xmlSelfClose("c:showKeys", { val: table.showKeys ? 1 : 0 }),
-  ];
+  ]
   // CT_DTable schema places `<c:spPr>` after the four required
   // boolean children, before `<c:txPr>` and the optional `<c:extLst>`
   // (ECMA-376 Part 1, §21.2.2.54). The writer skips emission entirely
@@ -763,8 +763,8 @@ export function buildDataTable(table: {
     table.borderColor,
     table.borderWidth,
     table.borderDash,
-  );
-  if (spPrXml !== undefined) children.push(spPrXml);
+  )
+  if (spPrXml !== undefined) children.push(spPrXml)
   // CT_DTable schema places `<c:txPr>` after `<c:spPr>` and before
   // the optional `<c:extLst>` (ECMA-376 Part 1, §21.2.2.54). The writer
   // skips emission entirely when no typography knob is pinned so a
@@ -777,9 +777,9 @@ export function buildDataTable(table: {
     table.underline,
     table.strikethrough,
     table.fontFamily,
-  );
-  if (txPrXml !== undefined) children.push(txPrXml);
-  return xmlElement("c:dTable", undefined, children);
+  )
+  if (txPrXml !== undefined) children.push(txPrXml)
+  return xmlElement("c:dTable", undefined, children)
 }
 
 /**
@@ -816,39 +816,39 @@ export function buildDataTableSpPr(
     borderWidthPt === undefined &&
     borderDash === undefined
   ) {
-    return undefined;
+    return undefined
   }
-  const children: string[] = [];
+  const children: string[] = []
   if (fillColor !== undefined) {
     children.push(
       xmlElement("a:solidFill", undefined, [xmlSelfClose("a:srgbClr", { val: fillColor })]),
-    );
+    )
   }
   if (borderColor !== undefined || borderWidthPt !== undefined || borderDash !== undefined) {
-    const lnAttrs: Record<string, string | number> = {};
+    const lnAttrs: Record<string, string | number> = {}
     if (borderWidthPt !== undefined) {
       // OOXML stores stroke width in EMU (1 pt = 12 700 EMU). Round to
       // the nearest integer because the schema types `w` as `xsd:int`.
-      lnAttrs.w = Math.round(borderWidthPt * EMU_PER_PT);
+      lnAttrs.w = Math.round(borderWidthPt * EMU_PER_PT)
     }
-    const lnChildren: string[] = [];
+    const lnChildren: string[] = []
     if (borderColor !== undefined) {
       lnChildren.push(
         xmlElement("a:solidFill", undefined, [xmlSelfClose("a:srgbClr", { val: borderColor })]),
-      );
+      )
     }
     // `<a:prstDash>` follows `<a:solidFill>` per CT_LineProperties
     // schema sequence (ECMA-376 Part 1, §20.1.2.3.24).
     if (borderDash !== undefined) {
-      lnChildren.push(xmlSelfClose("a:prstDash", { val: borderDash }));
+      lnChildren.push(xmlSelfClose("a:prstDash", { val: borderDash }))
     }
     children.push(
       lnChildren.length === 0
         ? xmlSelfClose("a:ln", lnAttrs)
         : xmlElement("a:ln", Object.keys(lnAttrs).length > 0 ? lnAttrs : undefined, lnChildren),
-    );
+    )
   }
-  return xmlElement("c:spPr", undefined, children);
+  return xmlElement("c:spPr", undefined, children)
 }
 
 /**
@@ -890,19 +890,19 @@ export function buildDataTableTxPr(
     strikethrough === undefined &&
     fontFamily === undefined
   )
-    return undefined;
-  const defRPrAttrs: Record<string, string | number> = {};
-  if (fontSizePt !== undefined) defRPrAttrs.sz = fontSizePt * TITLE_FONT_SZ_PER_POINT;
-  if (bold !== undefined) defRPrAttrs.b = bold ? 1 : 0;
-  if (italic !== undefined) defRPrAttrs.i = italic ? 1 : 0;
-  if (underline !== undefined) defRPrAttrs.u = underline ? "sng" : "none";
+    return undefined
+  const defRPrAttrs: Record<string, string | number> = {}
+  if (fontSizePt !== undefined) defRPrAttrs.sz = fontSizePt * TITLE_FONT_SZ_PER_POINT
+  if (bold !== undefined) defRPrAttrs.b = bold ? 1 : 0
+  if (italic !== undefined) defRPrAttrs.i = italic ? 1 : 0
+  if (underline !== undefined) defRPrAttrs.u = underline ? "sng" : "none"
   // Strikethrough rides as `strike="sngStrike"` on the same
   // `<a:defRPr>` slot. Absence collapses to omitting the attribute
   // entirely (the OOXML default `"noStrike"` is functionally
   // identical to absence — the reader collapses both to `undefined`).
   // The writer never emits `"noStrike"` or `"dblStrike"` so the
   // surfaced shape stays consistent with Excel's UI checkbox.
-  if (strikethrough === true) defRPrAttrs.strike = "sngStrike";
+  if (strikethrough === true) defRPrAttrs.strike = "sngStrike"
   // OOXML's `<a:defRPr><a:solidFill><a:srgbClr val="RRGGBB"/>
   // </a:solidFill></a:defRPr>` carries the data-table font color.
   // Absence (`undefined`) collapses to skipping the `<a:solidFill>`
@@ -911,7 +911,7 @@ export function buildDataTableTxPr(
   // had a custom color picked).
   const solidFillChild = rgbHex
     ? xmlElement("a:solidFill", undefined, [xmlSelfClose("a:srgbClr", { val: rgbHex })])
-    : undefined;
+    : undefined
   // OOXML's `<a:defRPr><a:latin typeface=".."/></a:defRPr>` carries
   // the data-table font family. The `<a:latin>` element follows
   // `<a:solidFill>` per the CT_TextCharacterProperties child sequence
@@ -919,7 +919,7 @@ export function buildDataTableTxPr(
   // to omitting the entire `<a:latin>` element so the data table
   // inherits the theme typeface (Excel's reference behavior for
   // fresh data tables that have not had a custom font picked).
-  const latinChild = fontFamily ? xmlSelfClose("a:latin", { typeface: fontFamily }) : undefined;
+  const latinChild = fontFamily ? xmlSelfClose("a:latin", { typeface: fontFamily }) : undefined
   // When a fill color or a typeface is set the `<a:defRPr>` slot
   // expands from self-closing to wrapping the children; otherwise the
   // writer keeps the existing self-closing form so a fresh chart with
@@ -927,13 +927,13 @@ export function buildDataTableTxPr(
   // byte-for-byte. Children are emitted in
   // CT_TextCharacterProperties' canonical schema order: solidFill
   // first, then latin.
-  const defRPrChildren: string[] = [];
-  if (solidFillChild) defRPrChildren.push(solidFillChild);
-  if (latinChild) defRPrChildren.push(latinChild);
+  const defRPrChildren: string[] = []
+  if (solidFillChild) defRPrChildren.push(solidFillChild)
+  if (latinChild) defRPrChildren.push(latinChild)
   const defRPr =
     defRPrChildren.length > 0
       ? xmlElement("a:defRPr", defRPrAttrs, defRPrChildren)
-      : xmlSelfClose("a:defRPr", defRPrAttrs);
+      : xmlSelfClose("a:defRPr", defRPrAttrs)
   return xmlElement("c:txPr", undefined, [
     xmlSelfClose("a:bodyPr"),
     xmlSelfClose("a:lstStyle"),
@@ -941,7 +941,7 @@ export function buildDataTableTxPr(
       xmlElement("a:pPr", undefined, [defRPr]),
       xmlSelfClose("a:endParaRPr", { lang: "en-US" }),
     ]),
-  ]);
+  ])
 }
 
 // ── Clone resolvers (3-arg source/override) ───────────────────────
@@ -980,21 +980,21 @@ export function resolveCloneDataTable(
     // Inherit — pass the source through verbatim. The writer accepts
     // both the boolean and object shapes, so a parsed `ChartDataTable`
     // round-trips directly.
-    return sourceValue;
+    return sourceValue
   }
   if (override === null) {
     // Drop the inherited block. The writer treats `undefined` as
     // suppression and skips `<c:dTable>` entirely.
-    return undefined;
+    return undefined
   }
   if (override === false) {
     // Symmetric with `null` — kept distinct in the API surface for
     // ergonomic alignment with the writer's `boolean | object` shape,
     // but emits the same on-the-wire result (no `<c:dTable>`).
-    return undefined;
+    return undefined
   }
   // `true` or a {@link ChartDataTable} object — replace the inherited
   // block wholesale. The writer accepts both forms and falls back to
   // the OOXML reference defaults for any field the object leaves unset.
-  return override;
+  return override
 }

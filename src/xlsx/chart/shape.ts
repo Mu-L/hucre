@@ -16,8 +16,8 @@
 // "find legend / title / axis-title first" lookup happens at the
 // caller, the helper takes care of the inner walk.
 
-import type { ChartBorderDash, ChartLineDashStyle } from "./types";
-import type { XmlElement } from "../../xml/parser";
+import type { ChartBorderDash, ChartLineDashStyle } from "./types"
+import type { XmlElement } from "../../xml/parser"
 
 /**
  * Local copy of `findChild`. The xml/parser module does not export the
@@ -28,9 +28,9 @@ import type { XmlElement } from "../../xml/parser";
  */
 function findChild(el: XmlElement, localName: string): XmlElement | undefined {
   for (const c of el.children) {
-    if (typeof c !== "string" && c.local === localName) return c;
+    if (typeof c !== "string" && c.local === localName) return c
   }
-  return undefined;
+  return undefined
 }
 
 // ── Stroke width ──────────────────────────────────────────────────
@@ -41,11 +41,11 @@ function findChild(el: XmlElement, localName: string): XmlElement | undefined {
 // (ECMA-376 Part 1, §20.1.2.3.24).
 
 /** Smallest stroke width Excel's UI exposes, in points. */
-export const STROKE_WIDTH_MIN_PT = 0.25;
+export const STROKE_WIDTH_MIN_PT = 0.25
 /** Largest stroke width Excel's UI exposes, in points. */
-export const STROKE_WIDTH_MAX_PT = 13.5;
+export const STROKE_WIDTH_MAX_PT = 13.5
 /** Conversion factor between OOXML EMU and points. */
-export const EMU_PER_PT = 12700;
+export const EMU_PER_PT = 12700
 
 // ── Line dash ──────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ export const VALID_DASH_STYLES: ReadonlySet<ChartLineDashStyle> = new Set([
   "sysDot",
   "sysDashDot",
   "sysDashDotDot",
-]);
+])
 
 /**
  * Recognized values of {@link ChartBorderDash} — the chart-frame
@@ -86,7 +86,7 @@ export const VALID_BORDER_DASHES: ReadonlySet<ChartBorderDash> = new Set([
   "sysDashDot",
   "sysDashDotDot",
   "sysDot",
-]);
+])
 
 // ── Hex normalization ─────────────────────────────────────────────
 
@@ -98,13 +98,13 @@ export const VALID_BORDER_DASHES: ReadonlySet<ChartBorderDash> = new Set([
  * characters, alpha-channel forms, or non-string tokens.
  */
 export function normalizeRgbHex(raw: unknown): string | undefined {
-  if (typeof raw !== "string") return undefined;
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) return undefined;
-  const hex = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
-  if (hex.length !== 6) return undefined;
-  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return undefined;
-  return hex.toUpperCase();
+  if (typeof raw !== "string") return undefined
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return undefined
+  const hex = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed
+  if (hex.length !== 6) return undefined
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return undefined
+  return hex.toUpperCase()
 }
 
 // ── Generic spPr readers ──────────────────────────────────────────
@@ -130,13 +130,13 @@ export function normalizeRgbHex(raw: unknown): string | undefined {
  * escapes) likewise drop to `undefined`.
  */
 export function parseSpPrFill(parent: XmlElement): string | undefined {
-  const spPr = findChild(parent, "spPr");
-  if (!spPr) return undefined;
-  const solidFill = findChild(spPr, "solidFill");
-  if (!solidFill) return undefined;
-  const srgbClr = findChild(solidFill, "srgbClr");
-  if (!srgbClr) return undefined;
-  return normalizeRgbHex(srgbClr.attrs.val);
+  const spPr = findChild(parent, "spPr")
+  if (!spPr) return undefined
+  const solidFill = findChild(spPr, "solidFill")
+  if (!solidFill) return undefined
+  const srgbClr = findChild(solidFill, "srgbClr")
+  if (!srgbClr) return undefined
+  return normalizeRgbHex(srgbClr.attrs.val)
 }
 
 /**
@@ -149,15 +149,15 @@ export function parseSpPrFill(parent: XmlElement): string | undefined {
  * `<c:spPr>` block.
  */
 export function parseSpPrBorderColor(parent: XmlElement): string | undefined {
-  const spPr = findChild(parent, "spPr");
-  if (!spPr) return undefined;
-  const ln = findChild(spPr, "ln");
-  if (!ln) return undefined;
-  const solidFill = findChild(ln, "solidFill");
-  if (!solidFill) return undefined;
-  const srgbClr = findChild(solidFill, "srgbClr");
-  if (!srgbClr) return undefined;
-  return normalizeRgbHex(srgbClr.attrs.val);
+  const spPr = findChild(parent, "spPr")
+  if (!spPr) return undefined
+  const ln = findChild(spPr, "ln")
+  if (!ln) return undefined
+  const solidFill = findChild(ln, "solidFill")
+  if (!solidFill) return undefined
+  const srgbClr = findChild(solidFill, "srgbClr")
+  if (!srgbClr) return undefined
+  return normalizeRgbHex(srgbClr.attrs.val)
 }
 
 /**
@@ -176,19 +176,19 @@ export function parseSpPrBorderColor(parent: XmlElement): string | undefined {
  * border" marker — the writer-side knob does not model that state).
  */
 export function parseBorderWidthFromSpPr(parent: XmlElement): number | undefined {
-  const spPr = findChild(parent, "spPr");
-  if (!spPr) return undefined;
-  const ln = findChild(spPr, "ln");
-  if (!ln) return undefined;
-  const wAttr = ln.attrs.w;
-  if (typeof wAttr !== "string") return undefined;
-  const emu = Number.parseFloat(wAttr);
-  if (!Number.isFinite(emu) || emu <= 0) return undefined;
+  const spPr = findChild(parent, "spPr")
+  if (!spPr) return undefined
+  const ln = findChild(spPr, "ln")
+  if (!ln) return undefined
+  const wAttr = ln.attrs.w
+  if (typeof wAttr !== "string") return undefined
+  const emu = Number.parseFloat(wAttr)
+  if (!Number.isFinite(emu) || emu <= 0) return undefined
   // Snap to the 0.25 pt grid Excel's UI exposes (Math.round(x * 4) / 4).
-  const pt = Math.round((emu / EMU_PER_PT) * 4) / 4;
-  if (pt < STROKE_WIDTH_MIN_PT) return STROKE_WIDTH_MIN_PT;
-  if (pt > STROKE_WIDTH_MAX_PT) return STROKE_WIDTH_MAX_PT;
-  return pt;
+  const pt = Math.round((emu / EMU_PER_PT) * 4) / 4
+  if (pt < STROKE_WIDTH_MIN_PT) return STROKE_WIDTH_MIN_PT
+  if (pt > STROKE_WIDTH_MAX_PT) return STROKE_WIDTH_MAX_PT
+  return pt
 }
 
 /**
@@ -205,18 +205,18 @@ export function parseBorderWidthFromSpPr(parent: XmlElement): number | undefined
  * matches every chart-frame border-dash slot the writer authors.
  */
 export function parseBorderDashFromSpPr(parent: XmlElement): ChartBorderDash | undefined {
-  const spPr = findChild(parent, "spPr");
-  if (!spPr) return undefined;
-  const ln = findChild(spPr, "ln");
-  if (!ln) return undefined;
-  const prstDash = findChild(ln, "prstDash");
-  if (!prstDash) return undefined;
-  const raw = prstDash.attrs.val;
-  if (typeof raw !== "string") return undefined;
-  const trimmed = raw.trim() as ChartBorderDash;
-  if (!VALID_BORDER_DASHES.has(trimmed)) return undefined;
-  if (trimmed === "solid") return undefined;
-  return trimmed;
+  const spPr = findChild(parent, "spPr")
+  if (!spPr) return undefined
+  const ln = findChild(spPr, "ln")
+  if (!ln) return undefined
+  const prstDash = findChild(ln, "prstDash")
+  if (!prstDash) return undefined
+  const raw = prstDash.attrs.val
+  if (typeof raw !== "string") return undefined
+  const trimmed = raw.trim() as ChartBorderDash
+  if (!VALID_BORDER_DASHES.has(trimmed)) return undefined
+  if (trimmed === "solid") return undefined
+  return trimmed
 }
 
 // ── Stroke width clamp ────────────────────────────────────────────
@@ -231,12 +231,12 @@ export function parseBorderDashFromSpPr(parent: XmlElement): ChartBorderDash | u
  * does not drift across round-trips (Excel rounds in the UI anyway).
  */
 export function clampStrokeWidthPt(value: number | undefined): number | undefined {
-  if (value === undefined || !Number.isFinite(value)) return undefined;
+  if (value === undefined || !Number.isFinite(value)) return undefined
   // Snap to the 0.25 pt grid Excel's UI exposes (Math.round(x * 4) / 4).
-  const snapped = Math.round(value * 4) / 4;
-  if (snapped < STROKE_WIDTH_MIN_PT) return STROKE_WIDTH_MIN_PT;
-  if (snapped > STROKE_WIDTH_MAX_PT) return STROKE_WIDTH_MAX_PT;
-  return snapped;
+  const snapped = Math.round(value * 4) / 4
+  if (snapped < STROKE_WIDTH_MIN_PT) return STROKE_WIDTH_MIN_PT
+  if (snapped > STROKE_WIDTH_MAX_PT) return STROKE_WIDTH_MAX_PT
+  return snapped
 }
 
 /**
@@ -250,10 +250,10 @@ export function clampStrokeWidthPt(value: number | undefined): number | undefine
 export function normalizeBorderDash(
   value: ChartBorderDash | undefined,
 ): ChartBorderDash | undefined {
-  if (typeof value !== "string") return undefined;
-  if (!VALID_BORDER_DASHES.has(value)) return undefined;
-  if (value === "solid") return undefined;
-  return value;
+  if (typeof value !== "string") return undefined
+  if (!VALID_BORDER_DASHES.has(value)) return undefined
+  if (value === "solid") return undefined
+  return value
 }
 
 /**
@@ -279,9 +279,9 @@ export function resolveBorderWidthPt(
   sourceValue: number | undefined,
   override: number | null | undefined,
 ): number | undefined {
-  if (override === undefined) return clampStrokeWidthPt(sourceValue);
-  if (override === null) return undefined;
-  return clampStrokeWidthPt(override);
+  if (override === undefined) return clampStrokeWidthPt(sourceValue)
+  if (override === null) return undefined
+  return clampStrokeWidthPt(override)
 }
 
 /**
@@ -298,7 +298,7 @@ export function resolveBorderDash(
   sourceValue: ChartBorderDash | undefined,
   override: ChartBorderDash | null | undefined,
 ): ChartBorderDash | undefined {
-  if (override === undefined) return normalizeBorderDash(sourceValue);
-  if (override === null) return undefined;
-  return normalizeBorderDash(override);
+  if (override === undefined) return normalizeBorderDash(sourceValue)
+  if (override === null) return undefined
+  return normalizeBorderDash(override)
 }

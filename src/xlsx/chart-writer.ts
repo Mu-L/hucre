@@ -6,15 +6,15 @@
 // Chapter 21). Each chart is a self-contained <c:chartSpace> document
 // referenced from a drawing part via a `chart` relationship.
 
-import type { ChartDisplayBlanksAs, SheetChart, WriteChartKind } from "../_types";
-import { xmlDocument, xmlElement, xmlSelfClose } from "../xml/writer";
-import { EMU_PER_PT, clampStrokeWidthPt, normalizeBorderDash } from "./chart/shape";
+import type { ChartDisplayBlanksAs, SheetChart, WriteChartKind } from "../_types"
+import { xmlDocument, xmlElement, xmlSelfClose } from "../xml/writer"
+import { EMU_PER_PT, clampStrokeWidthPt, normalizeBorderDash } from "./chart/shape"
 import {
   buildBackWallThickness,
   buildFloorThickness,
   buildSideWallThickness,
   buildView3D,
-} from "./chart/walls";
+} from "./chart/walls"
 import {
   buildLegend,
   resolveLegendBold,
@@ -32,7 +32,7 @@ import {
   resolveLegendPosition,
   resolveLegendStrikethrough,
   resolveLegendUnderline,
-} from "./chart/legend";
+} from "./chart/legend"
 import {
   buildTitle,
   normalizeTitleColor,
@@ -50,28 +50,28 @@ import {
   resolveTitleRotation,
   resolveTitleStrike,
   resolveTitleUnderline,
-} from "./chart/title";
-import { resolveAutoTitleDeleted } from "./chart/axis";
-import { buildPlotArea } from "./chart/plotArea";
+} from "./chart/title"
+import { resolveAutoTitleDeleted } from "./chart/axis"
+import { buildPlotArea } from "./chart/plotArea"
 
 // ── Namespaces ───────────────────────────────────────────────────────
 
-const NS_C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
-const NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
-const NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-const NS_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships";
+const NS_C = "http://schemas.openxmlformats.org/drawingml/2006/chart"
+const NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+const NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+const NS_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships"
 
 // ── Public API ───────────────────────────────────────────────────────
 
 export interface ChartWriteResult {
   /** Body of `xl/charts/chartN.xml`. */
-  chartXml: string;
+  chartXml: string
   /**
    * Body of `xl/charts/_rels/chartN.xml.rels`. Always present so the
    * package validator stays happy even though Phase 1 charts have no
    * outgoing relationships.
    */
-  chartRels: string;
+  chartRels: string
 }
 
 /**
@@ -82,10 +82,10 @@ export interface ChartWriteResult {
  *                    cell references such as `"B2:B4"`.
  */
 export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResult {
-  const showTitle = chart.showTitle ?? Boolean(chart.title);
-  const legendPos = resolveLegendPosition(chart);
+  const showTitle = chart.showTitle ?? Boolean(chart.title)
+  const legendPos = resolveLegendPosition(chart)
 
-  const chartChildren: string[] = [];
+  const chartChildren: string[] = []
 
   // ── Title ──
   if (showTitle && chart.title) {
@@ -107,7 +107,7 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
         resolveTitleBorderWidth(chart),
         resolveTitleBorderDash(chart),
       ),
-    );
+    )
   }
   // `<c:autoTitleDeleted>` records whether the user explicitly deleted
   // Excel's auto-generated title (the synthesised series-name title
@@ -129,7 +129,7 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // even if a literal title is emitted.
   chartChildren.push(
     xmlSelfClose("c:autoTitleDeleted", { val: resolveAutoTitleDeleted(chart) ? 1 : 0 }),
-  );
+  )
 
   // `<c:view3D>` (CT_View3D, ECMA-376 Part 1, §21.2.2.228) sits on
   // `<c:chart>` between `<c:autoTitleDeleted>` / `<c:pivotFmts>` and
@@ -141,9 +141,9 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // through cloneChart. The writer skips emission entirely when the
   // caller leaves `view3D` unset so a fresh chart matches Excel's
   // reference serialization byte-for-byte.
-  const view3DXml = buildView3D(chart.view3D);
+  const view3DXml = buildView3D(chart.view3D)
   if (view3DXml !== undefined) {
-    chartChildren.push(view3DXml);
+    chartChildren.push(view3DXml)
   }
 
   // `<c:floor>` (CT_Surface, ECMA-376 Part 1, §21.2.2.69) sits on
@@ -158,9 +158,9 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // entirely when the caller leaves `floorThickness` unset (or pins
   // `0`) so a fresh chart matches Excel's reference serialization
   // byte-for-byte.
-  const floorXml = buildFloorThickness(chart.floorThickness);
+  const floorXml = buildFloorThickness(chart.floorThickness)
   if (floorXml !== undefined) {
-    chartChildren.push(floorXml);
+    chartChildren.push(floorXml)
   }
 
   // `<c:sideWall>` (CT_Surface, ECMA-376 Part 1, §21.2.2.187) sits on
@@ -175,9 +175,9 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // emission entirely when the caller leaves `sideWallThickness`
   // unset (or pins `0`) so a fresh chart matches Excel's reference
   // serialization byte-for-byte.
-  const sideWallXml = buildSideWallThickness(chart.sideWallThickness);
+  const sideWallXml = buildSideWallThickness(chart.sideWallThickness)
   if (sideWallXml !== undefined) {
-    chartChildren.push(sideWallXml);
+    chartChildren.push(sideWallXml)
   }
 
   // `<c:backWall>` (CT_Surface, ECMA-376 Part 1, §21.2.2.31) sits on
@@ -191,13 +191,13 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // skips emission entirely when the caller leaves `backWallThickness`
   // unset (or pins `0`) so a fresh chart matches Excel's reference
   // serialization byte-for-byte.
-  const backWallXml = buildBackWallThickness(chart.backWallThickness);
+  const backWallXml = buildBackWallThickness(chart.backWallThickness)
   if (backWallXml !== undefined) {
-    chartChildren.push(backWallXml);
+    chartChildren.push(backWallXml)
   }
 
   // ── Plot Area ──
-  chartChildren.push(buildPlotArea(chart, sheetName));
+  chartChildren.push(buildPlotArea(chart, sheetName))
 
   // ── Legend ──
   if (legendPos) {
@@ -219,11 +219,11 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
         resolveLegendBorderWidth(chart),
         resolveLegendBorderDash(chart),
       ),
-    );
+    )
   }
 
-  chartChildren.push(xmlSelfClose("c:plotVisOnly", { val: resolvePlotVisOnly(chart) ? 1 : 0 }));
-  chartChildren.push(xmlSelfClose("c:dispBlanksAs", { val: resolveDispBlanksAs(chart) }));
+  chartChildren.push(xmlSelfClose("c:plotVisOnly", { val: resolvePlotVisOnly(chart) ? 1 : 0 }))
+  chartChildren.push(xmlSelfClose("c:dispBlanksAs", { val: resolveDispBlanksAs(chart) }))
   // `<c:showDLblsOverMax>` sits at the tail of CT_Chart per ECMA-376
   // Part 1, §21.2.2.29 (after `<c:dispBlanksAs>` and before
   // `<c:extLst>`). The writer always emits the element so the rendered
@@ -232,9 +232,9 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // and `<c:dispBlanksAs>` follow.
   chartChildren.push(
     xmlSelfClose("c:showDLblsOverMax", { val: resolveShowDLblsOverMax(chart) ? 1 : 0 }),
-  );
+  )
 
-  const chartElement = xmlElement("c:chart", undefined, chartChildren);
+  const chartElement = xmlElement("c:chart", undefined, chartChildren)
 
   // `<c:chartSpace>` element ordering per CT_ChartSpace
   // (ECMA-376 Part 1, §21.2.2.29): date1904?, lang?, roundedCorners?,
@@ -246,7 +246,7 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // chart stays minimal; Excel itself falls back to the workbook's
   // date system / editing language / application default look
   // respectively.
-  const chartSpaceChildren: string[] = [];
+  const chartSpaceChildren: string[] = []
   if (resolveDate1904(chart)) {
     // `<c:date1904 val="0"/>` is the OOXML default — skip emission so
     // the rendered shape matches absence (every other chart-space
@@ -254,18 +254,18 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
     // non-default `val="1"` surfaces so a re-parse of the writer's
     // output collapses back to the same `undefined` an unmarked
     // chart parses to.
-    chartSpaceChildren.push(xmlSelfClose("c:date1904", { val: 1 }));
+    chartSpaceChildren.push(xmlSelfClose("c:date1904", { val: 1 }))
   }
-  const langVal = resolveLang(chart);
+  const langVal = resolveLang(chart)
   if (langVal !== undefined) {
-    chartSpaceChildren.push(xmlSelfClose("c:lang", { val: langVal }));
+    chartSpaceChildren.push(xmlSelfClose("c:lang", { val: langVal }))
   }
   chartSpaceChildren.push(
     xmlSelfClose("c:roundedCorners", { val: resolveRoundedCorners(chart) ? 1 : 0 }),
-  );
-  const styleVal = resolveStyle(chart);
+  )
+  const styleVal = resolveStyle(chart)
   if (styleVal !== undefined) {
-    chartSpaceChildren.push(xmlSelfClose("c:style", { val: styleVal }));
+    chartSpaceChildren.push(xmlSelfClose("c:style", { val: styleVal }))
   }
   // `<c:protection>` (CT_Protection, ECMA-376 Part 1, §21.2.2.142)
   // sits on `<c:chartSpace>` between `<c:style>` / `<c:clrMapOvr>` /
@@ -275,11 +275,11 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // round-trips when the override is `true` / `{}` because every
   // child is `<xsd:boolean>`-typed and absence of a child is itself
   // valid OOXML (CT_Protection lists every flag as optional).
-  const protection = resolveProtection(chart);
+  const protection = resolveProtection(chart)
   if (protection !== undefined) {
-    chartSpaceChildren.push(buildProtection(protection));
+    chartSpaceChildren.push(buildProtection(protection))
   }
-  chartSpaceChildren.push(chartElement);
+  chartSpaceChildren.push(chartElement)
 
   // `<c:chartSpace><c:spPr><a:solidFill><a:srgbClr val=".."/></a:solidFill>
   // </c:spPr></c:chartSpace>` — Excel's "Format Chart Area -> Fill ->
@@ -292,9 +292,9 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
   // normalizes to a literal hex; absence and every malformed token
   // collapse to no `<c:spPr>` so a fresh chart matches Excel's
   // reference shape byte-for-byte.
-  const chartSpaceSpPrXml = buildChartSpaceSpPr(chart);
+  const chartSpaceSpPrXml = buildChartSpaceSpPr(chart)
   if (chartSpaceSpPrXml !== undefined) {
-    chartSpaceChildren.push(chartSpaceSpPrXml);
+    chartSpaceChildren.push(chartSpaceSpPrXml)
   }
 
   const chartXml = xmlDocument(
@@ -305,15 +305,15 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
       "xmlns:r": NS_R,
     },
     chartSpaceChildren,
-  );
+  )
 
   // Always emit an empty rels file. Phase 1 charts do not depend on
   // any other parts (no themeOverride, no userShapes, no embedded
   // spreadsheets), but Excel and several validators expect the file
   // to exist whenever a `chartN.xml` is declared.
-  const chartRels = xmlDocument("Relationships", { xmlns: NS_RELATIONSHIPS }, []);
+  const chartRels = xmlDocument("Relationships", { xmlns: NS_RELATIONSHIPS }, [])
 
-  return { chartXml, chartRels };
+  return { chartXml, chartRels }
 }
 
 // ── Plot Area ────────────────────────────────────────────────────────
@@ -341,50 +341,50 @@ export function writeChart(chart: SheetChart, sheetName: string): ChartWriteResu
  * the plot-area knobs paint only the inner band that hosts the series.
  */
 function buildChartSpaceSpPr(chart: SheetChart): string | undefined {
-  const fillHex = normalizeChartSpaceFillColor(chart.chartSpaceFillColor);
-  const borderHex = normalizeChartSpaceBorderColor(chart.chartSpaceBorderColor);
-  const borderWidthPt = clampStrokeWidthPt(chart.chartSpaceBorderWidth);
-  const borderDash = normalizeBorderDash(chart.chartSpaceBorderDash);
+  const fillHex = normalizeChartSpaceFillColor(chart.chartSpaceFillColor)
+  const borderHex = normalizeChartSpaceBorderColor(chart.chartSpaceBorderColor)
+  const borderWidthPt = clampStrokeWidthPt(chart.chartSpaceBorderWidth)
+  const borderDash = normalizeBorderDash(chart.chartSpaceBorderDash)
   if (
     fillHex === undefined &&
     borderHex === undefined &&
     borderWidthPt === undefined &&
     borderDash === undefined
   ) {
-    return undefined;
+    return undefined
   }
 
-  const children: string[] = [];
+  const children: string[] = []
   if (fillHex !== undefined) {
     children.push(
       xmlElement("a:solidFill", undefined, [xmlSelfClose("a:srgbClr", { val: fillHex })]),
-    );
+    )
   }
   if (borderHex !== undefined || borderWidthPt !== undefined || borderDash !== undefined) {
-    const lnAttrs: Record<string, string | number> = {};
+    const lnAttrs: Record<string, string | number> = {}
     if (borderWidthPt !== undefined) {
       // OOXML stores stroke width in EMU (1 pt = 12 700 EMU). Round to
       // the nearest integer because the schema types `w` as `xsd:int`.
-      lnAttrs.w = Math.round(borderWidthPt * EMU_PER_PT);
+      lnAttrs.w = Math.round(borderWidthPt * EMU_PER_PT)
     }
-    const lnChildren: string[] = [];
+    const lnChildren: string[] = []
     if (borderHex !== undefined) {
       lnChildren.push(
         xmlElement("a:solidFill", undefined, [xmlSelfClose("a:srgbClr", { val: borderHex })]),
-      );
+      )
     }
     // `<a:prstDash>` follows `<a:solidFill>` per CT_LineProperties
     // schema sequence (ECMA-376 Part 1, §20.1.2.3.24).
     if (borderDash !== undefined) {
-      lnChildren.push(xmlSelfClose("a:prstDash", { val: borderDash }));
+      lnChildren.push(xmlSelfClose("a:prstDash", { val: borderDash }))
     }
     children.push(
       lnChildren.length === 0
         ? xmlSelfClose("a:ln", lnAttrs)
         : xmlElement("a:ln", Object.keys(lnAttrs).length > 0 ? lnAttrs : undefined, lnChildren),
-    );
+    )
   }
-  return xmlElement("c:spPr", undefined, children);
+  return xmlElement("c:spPr", undefined, children)
 }
 
 /**
@@ -404,7 +404,7 @@ function buildChartSpaceSpPr(chart: SheetChart): string | undefined {
  * fill slot shares the same sRGB grammar.
  */
 function normalizeChartSpaceFillColor(value: string | undefined): string | undefined {
-  return normalizeTitleColor(value);
+  return normalizeTitleColor(value)
 }
 
 /**
@@ -426,7 +426,7 @@ function normalizeChartSpaceFillColor(value: string | undefined): string | undef
  * writer slot (`<a:ln>` rather than `<a:solidFill>`).
  */
 function normalizeChartSpaceBorderColor(value: string | undefined): string | undefined {
-  return normalizeTitleColor(value);
+  return normalizeTitleColor(value)
 }
 
 // ── Data Table ───────────────────────────────────────────────────────
@@ -455,15 +455,15 @@ function normalizeChartSpaceBorderColor(value: string | undefined): string | und
  */
 function resolveProtection(chart: SheetChart):
   | {
-      chartObject: boolean;
-      data: boolean;
-      formatting: boolean;
-      selection: boolean;
-      userInterface: boolean;
+      chartObject: boolean
+      data: boolean
+      formatting: boolean
+      selection: boolean
+      userInterface: boolean
     }
   | undefined {
-  const raw = chart.protection;
-  if (raw === undefined || raw === false) return undefined;
+  const raw = chart.protection
+  if (raw === undefined || raw === false) return undefined
 
   if (raw === true) {
     return {
@@ -472,7 +472,7 @@ function resolveProtection(chart: SheetChart):
       formatting: false,
       selection: false,
       userInterface: false,
-    };
+    }
   }
 
   // Per-field overrides on top of the `false` defaults. Only literal
@@ -488,7 +488,7 @@ function resolveProtection(chart: SheetChart):
     formatting: raw.formatting === true,
     selection: raw.selection === true,
     userInterface: raw.userInterface === true,
-  };
+  }
 }
 
 /**
@@ -506,11 +506,11 @@ function resolveProtection(chart: SheetChart):
  * `false` either way.
  */
 function buildProtection(protection: {
-  chartObject: boolean;
-  data: boolean;
-  formatting: boolean;
-  selection: boolean;
-  userInterface: boolean;
+  chartObject: boolean
+  data: boolean
+  formatting: boolean
+  selection: boolean
+  userInterface: boolean
 }): string {
   return xmlElement("c:protection", undefined, [
     xmlSelfClose("c:chartObject", { val: protection.chartObject ? 1 : 0 }),
@@ -518,7 +518,7 @@ function buildProtection(protection: {
     xmlSelfClose("c:formatting", { val: protection.formatting ? 1 : 0 }),
     xmlSelfClose("c:selection", { val: protection.selection ? 1 : 0 }),
     xmlSelfClose("c:userInterface", { val: protection.userInterface ? 1 : 0 }),
-  ]);
+  ])
 }
 
 // ── 3-D View ─────────────────────────────────────────────────────────
@@ -533,7 +533,7 @@ function buildProtection(protection: {
 
 // ── Display Blanks As ────────────────────────────────────────────────
 
-const DISP_BLANKS_AS_VALUES: ReadonlySet<ChartDisplayBlanksAs> = new Set(["gap", "zero", "span"]);
+const DISP_BLANKS_AS_VALUES: ReadonlySet<ChartDisplayBlanksAs> = new Set(["gap", "zero", "span"])
 
 /**
  * Resolve the `<c:dispBlanksAs>` value emitted on `<c:chart>`.
@@ -545,9 +545,9 @@ const DISP_BLANKS_AS_VALUES: ReadonlySet<ChartDisplayBlanksAs> = new Set(["gap",
  * itself includes it in every reference serialization.
  */
 function resolveDispBlanksAs(chart: SheetChart): ChartDisplayBlanksAs {
-  const raw = chart.dispBlanksAs;
-  if (raw && DISP_BLANKS_AS_VALUES.has(raw)) return raw;
-  return "gap";
+  const raw = chart.dispBlanksAs
+  if (raw && DISP_BLANKS_AS_VALUES.has(raw)) return raw
+  return "gap"
 }
 
 // ── Plot Visible Only ────────────────────────────────────────────────
@@ -563,8 +563,8 @@ function resolveDispBlanksAs(chart: SheetChart): ChartDisplayBlanksAs {
  * it in every reference serialization.
  */
 function resolvePlotVisOnly(chart: SheetChart): boolean {
-  if (typeof chart.plotVisOnly === "boolean") return chart.plotVisOnly;
-  return true;
+  if (typeof chart.plotVisOnly === "boolean") return chart.plotVisOnly
+  return true
 }
 
 // ── Show Data Labels Over Max ────────────────────────────────────────
@@ -586,8 +586,8 @@ function resolvePlotVisOnly(chart: SheetChart): boolean {
  * {@link resolveDispBlanksAs}.
  */
 function resolveShowDLblsOverMax(chart: SheetChart): boolean {
-  if (typeof chart.showDLblsOverMax === "boolean") return chart.showDLblsOverMax;
-  return true;
+  if (typeof chart.showDLblsOverMax === "boolean") return chart.showDLblsOverMax
+  return true
 }
 
 // ── Rounded Corners ──────────────────────────────────────────────────
@@ -607,8 +607,8 @@ function resolveShowDLblsOverMax(chart: SheetChart): boolean {
  * inside it (the toggle styles the outer frame, not the plot area).
  */
 function resolveRoundedCorners(chart: SheetChart): boolean {
-  if (typeof chart.roundedCorners === "boolean") return chart.roundedCorners;
-  return false;
+  if (typeof chart.roundedCorners === "boolean") return chart.roundedCorners
+  return false
 }
 
 // ── Chart Style Preset ──────────────────────────────────────────────
@@ -628,11 +628,11 @@ function resolveRoundedCorners(chart: SheetChart): boolean {
  * and precedes `<c:chart>` in the schema sequence.
  */
 function resolveStyle(chart: SheetChart): number | undefined {
-  const raw = chart.style;
-  if (typeof raw !== "number") return undefined;
-  if (!Number.isInteger(raw)) return undefined;
-  if (raw < 1 || raw > 48) return undefined;
-  return raw;
+  const raw = chart.style
+  if (typeof raw !== "number") return undefined
+  if (!Number.isInteger(raw)) return undefined
+  if (raw < 1 || raw > 48) return undefined
+  return raw
 }
 
 // ── Date System ──────────────────────────────────────────────────────
@@ -660,7 +660,7 @@ function resolveStyle(chart: SheetChart): number | undefined {
  * the writer threads it first when the chart pins it.
  */
 function resolveDate1904(chart: SheetChart): boolean {
-  return chart.date1904 === true;
+  return chart.date1904 === true
 }
 
 // ── Editing Locale ──────────────────────────────────────────────────
@@ -685,10 +685,10 @@ function resolveDate1904(chart: SheetChart): boolean {
  * recorded for in-chart text runs), not just the plot area.
  */
 function resolveLang(chart: SheetChart): string | undefined {
-  const raw = chart.lang;
-  if (typeof raw !== "string") return undefined;
-  if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(raw)) return undefined;
-  return raw;
+  const raw = chart.lang
+  if (typeof raw !== "string") return undefined
+  if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(raw)) return undefined
+  return raw
 }
 
 // ── Helpers exposed for the drawing layer ────────────────────────────
@@ -702,16 +702,16 @@ export function chartKindElement(kind: WriteChartKind): string {
   switch (kind) {
     case "bar":
     case "column":
-      return "c:barChart";
+      return "c:barChart"
     case "line":
-      return "c:lineChart";
+      return "c:lineChart"
     case "pie":
-      return "c:pieChart";
+      return "c:pieChart"
     case "doughnut":
-      return "c:doughnutChart";
+      return "c:doughnutChart"
     case "scatter":
-      return "c:scatterChart";
+      return "c:scatterChart"
     case "area":
-      return "c:areaChart";
+      return "c:areaChart"
   }
 }
