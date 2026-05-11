@@ -4,7 +4,6 @@
 import type {
   WriteOptions,
   WriteSheet,
-  CellStyle,
   CellValue,
   ColumnDef,
   DataValidation,

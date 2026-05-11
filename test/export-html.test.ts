@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toHtml } from "../src/export/html";
-import type { Sheet, Cell, CellStyle, MergeRange } from "../src/_types";
+import type { Sheet, Cell, MergeRange } from "../src/_types";
 
 /** Helper to create a minimal sheet */
 function makeSheet(rows: Sheet["rows"], overrides?: Partial<Sheet>): Sheet {

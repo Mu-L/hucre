@@ -3,7 +3,6 @@ import { writeOds } from "../src/ods/writer";
 import { readOds } from "../src/ods/reader";
 import { ZipReader } from "../src/zip/reader";
 import { parseXml } from "../src/xml/parser";
-import type { WriteSheet } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

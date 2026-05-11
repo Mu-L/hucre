@@ -464,18 +464,6 @@ function findBestFraction(value: number, maxDen: number): { num: number; den: nu
 // ── Number Formatting ───────────────────────────────────────────────
 
 function formatNumber(value: number, fmt: string, locale?: LocaleFormat): string {
-  // Extract literal strings and escaped chars first
-  const literals: { index: number; text: string }[] = [];
-  let stripped = "";
-  let i = 0;
-  let outputIndex = 0;
-
-  // We need to track prefix/suffix text vs number placeholders
-  // Strategy: extract all quoted text and escaped chars, then parse the number format core
-
-  let prefixText = "";
-  let suffixText = "";
-
   // Extract currency symbol and literal text from the format
   const { prefix, suffix, core } = extractLiterals(fmt);
 

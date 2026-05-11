@@ -65,7 +65,6 @@ const REL_SLICER = "http://schemas.microsoft.com/office/2007/relationships/slice
 const REL_TIMELINE = "http://schemas.microsoft.com/office/2011/relationships/timeline";
 const REL_THREADED_COMMENT =
   "http://schemas.microsoft.com/office/2017/10/relationships/threadedComment";
-const REL_PERSON = "http://schemas.microsoft.com/office/2017/10/relationships/person";
 const REL_PIVOT_TABLE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
 

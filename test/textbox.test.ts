@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { ZipReader } from "../src/zip/reader";
-import { parseXml } from "../src/xml/parser";
 import { writeXlsx } from "../src/xlsx/writer";
 import { readXlsx } from "../src/xlsx/reader";
-import type { WriteSheet, SheetTextBox } from "../src/_types";
+import type { WriteSheet } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

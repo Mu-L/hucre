@@ -32,7 +32,7 @@ import {
   parseSpPrBorderColor,
   parseSpPrFill,
 } from "./shape";
-import { childElements, elementText, findChild, parseBoolAttr, readBoolAttr } from "./util";
+import { elementText, findChild, readBoolAttr } from "./util";
 import { FONT_SIZE_MAX_PT, FONT_SIZE_MIN_PT, FONT_SZ_PER_POINT } from "./text";
 import { normalizeTitleColor, normalizeTitleFontSize } from "./title";
 import type { SheetChart } from "../../_types";

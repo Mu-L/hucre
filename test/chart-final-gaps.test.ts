@@ -30,14 +30,7 @@ import {
   VALID_SHAPE_3D,
   VALID_TRENDLINE_TYPES,
 } from "../src/xlsx/chart/seriesExtras";
-import type {
-  Chart,
-  ChartDataPoint,
-  ChartErrorBars,
-  ChartShape3D,
-  ChartTrendline,
-  SheetChart,
-} from "../src/_types";
+import type { ChartDataPoint, ChartErrorBars, SheetChart } from "../src/_types";
 
 const decoder = new TextDecoder("utf-8");
 
@@ -51,25 +44,6 @@ function makeChart(overrides: Partial<SheetChart> = {}): SheetChart {
     anchor: { from: { row: 5, col: 0 }, to: { row: 20, col: 6 } },
     ...overrides,
   };
-}
-
-function findChild(el: any, localName: string): any {
-  if (!el || !el.children) return undefined;
-  return el.children.find((c: any) => typeof c !== "string" && c.local === localName);
-}
-
-function findAll(el: any, localName: string): any[] {
-  if (!el || !el.children) return [];
-  return el.children.filter((c: any) => typeof c !== "string" && c.local === localName);
-}
-
-function deepFind(el: any, path: string[]): any {
-  let cur = el;
-  for (const name of path) {
-    cur = findChild(cur, name);
-    if (!cur) return undefined;
-  }
-  return cur;
 }
 
 function parseXmlString(s: string) {

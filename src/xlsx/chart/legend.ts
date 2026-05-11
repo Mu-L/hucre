@@ -35,18 +35,11 @@ import {
   type ResolvedManualLayout,
   buildManualLayout,
   normalizeChartManualLayout,
-  normalizeLayoutCoordinate,
   normalizeManualLayout,
   parseManualLayout,
 } from "./layout";
-import { childElements, findChild, parseBoolAttr, readBoolVal } from "./util";
-import {
-  FONT_SIZE_MAX_PT,
-  FONT_SIZE_MIN_PT,
-  FONT_SZ_PER_POINT,
-  ROTATION_MAX_DEG,
-  ROTATION_MIN_DEG,
-} from "./text";
+import { childElements, findChild, readBoolVal } from "./util";
+import { FONT_SIZE_MAX_PT, FONT_SIZE_MIN_PT, FONT_SZ_PER_POINT } from "./text";
 import { normalizeTitleColor, normalizeTitleFontSize } from "./title";
 
 // ── Legend types (writer-side) ────────────────────────────────────

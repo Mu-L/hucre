@@ -818,8 +818,6 @@ describe("Real World: Large Dataset Stress Test", () => {
   const COL_COUNT = 20;
 
   it("stream writes and reads 10k rows x 20 cols within time budget", async () => {
-    const start = performance.now();
-
     // Stream write
     const columns = Array.from({ length: COL_COUNT }, (_, i) => ({
       header: `Col_${i}`,
@@ -844,15 +842,13 @@ describe("Real World: Large Dataset Stress Test", () => {
     }
 
     const xlsx = await writer.finish();
-    const writeTime = performance.now() - start;
 
     expect(xlsx.byteLength).toBeGreaterThan(0);
 
     // Stream read
     const readStart = performance.now();
     const streamRows = await collectStreamRows(streamXlsxRows(xlsx));
-    const readTime = performance.now() - readStart;
-    const totalTime = performance.now() - start;
+    const totalTime = performance.now() - readStart;
 
     // +1 for header row auto-added by XlsxStreamWriter
     expect(streamRows).toHaveLength(ROW_COUNT + 1);

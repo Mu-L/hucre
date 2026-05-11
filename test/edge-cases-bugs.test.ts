@@ -5,52 +5,23 @@
 import { describe, it, expect } from "vitest";
 import { writeXlsx } from "../src/xlsx/writer";
 import { readXlsx } from "../src/xlsx/reader";
-import { XlsxStreamWriter } from "../src/xlsx/stream-writer";
-import { streamXlsxRows } from "../src/xlsx/stream-reader";
-import type { StreamRow } from "../src/xlsx/stream-reader";
 import { parseCsv } from "../src/csv/reader";
 import { writeCsv } from "../src/csv/writer";
 import { validateWithSchema } from "../src/_schema";
 import { serialToDate, dateToSerial } from "../src/_date";
 import { ZipWriter } from "../src/zip/writer";
 import { ZipReader } from "../src/zip/reader";
-import { parseXml, parseSax } from "../src/xml/parser";
-import { xmlEscape, xmlEscapeAttr } from "../src/xml/writer";
+import { parseXml } from "../src/xml/parser";
 import { writeOds } from "../src/ods/writer";
 import { readOds } from "../src/ods/reader";
-import {
-  insertRows,
-  deleteRows,
-  insertColumns,
-  deleteColumns,
-  cloneSheet,
-  moveSheet,
-  removeSheet,
-} from "../src/sheet-ops";
-import type {
-  CellValue,
-  WriteSheet,
-  CellStyle,
-  SchemaDefinition,
-  Sheet,
-  Workbook,
-} from "../src/_types";
+import { insertRows, deleteRows, removeSheet } from "../src/sheet-ops";
+import type { CellValue, WriteSheet, SchemaDefinition, Sheet, Workbook } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
 async function writeAndRead(sheets: WriteSheet[]): Promise<Workbook> {
   const xlsx = await writeXlsx({ sheets });
   return readXlsx(xlsx);
-}
-
-async function collectStreamRows(
-  gen: AsyncGenerator<StreamRow, void, undefined>,
-): Promise<StreamRow[]> {
-  const rows: StreamRow[] = [];
-  for await (const row of gen) {
-    rows.push(row);
-  }
-  return rows;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -717,7 +688,9 @@ describe("CSV: round-trip edge cases", () => {
   });
 
   it("very large number formatting avoids scientific notation", () => {
-    const rows: CellValue[][] = [[12345678901234567]];
+    // This large integer exceeds MAX_SAFE_INTEGER and loses precision in float64;
+    // the test is about CSV formatting (no scientific notation), not exact value.
+    const rows: CellValue[][] = [[1.2345678901234568e16]];
     const csv = writeCsv(rows);
     // Should NOT contain 'e' or 'E'
     expect(csv).not.toContain("e");
@@ -912,7 +885,7 @@ describe("XLSX: XML element ordering", () => {
 
 describe("XLSX: large column handling", () => {
   it("write cell at column 1000", async () => {
-    const row: CellValue[] = new Array(1001).fill(null);
+    const row: CellValue[] = Array.from({ length: 1001 }, () => null);
     row[1000] = "far right";
 
     const wb = await writeAndRead([{ name: "S", rows: [row] }]);

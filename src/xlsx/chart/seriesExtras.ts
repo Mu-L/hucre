@@ -20,7 +20,6 @@ import type {
   ChartErrorBarValType,
   ChartErrorBars,
   ChartKind,
-  ChartMarker,
   ChartShape3D,
   ChartTrendline,
   ChartTrendlineType,
@@ -36,14 +35,8 @@ import {
   normalizeBorderDash,
   normalizeRgbHex,
 } from "./shape";
-import { childElements, findChild, formulaText, parseBoolAttr, readBoolAttr } from "./util";
-import {
-  buildSeriesMarker,
-  clampMarkerSize,
-  cloneMarker,
-  normalizeMarkerSymbol,
-  parseMarker,
-} from "./series";
+import { childElements, findChild, formulaText, readBoolAttr } from "./util";
+import { buildSeriesMarker, cloneMarker, parseMarker } from "./series";
 
 // ── Constants ─────────────────────────────────────────────────────
 

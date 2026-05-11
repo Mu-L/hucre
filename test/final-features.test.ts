@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { ZipReader } from "../src/zip/reader";
-import { parseXml } from "../src/xml/parser";
 import { writeXlsx } from "../src/xlsx/writer";
 import { readXlsx } from "../src/xlsx/reader";
 import { writeDrawing } from "../src/xlsx/drawing-writer";

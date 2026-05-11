@@ -69,7 +69,7 @@ export function fillTemplate(workbook: Workbook, data: Record<string, CellValue>
 
     // Also process the cells Map if present (for rich cell data)
     if (sheet.cells) {
-      for (const [key, cell] of sheet.cells) {
+      for (const [_key, cell] of sheet.cells) {
         if (typeof cell.value !== "string") continue;
         if (!cell.value.includes("{{")) continue;
 

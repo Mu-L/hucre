@@ -8,9 +8,6 @@ export { calculateColumnWidth, measureValueWidth } from "./auto-width";
 
 // ── Constants ────────────────────────────────────────────────────────
 
-/** Excel default row height in points */
-const DEFAULT_ROW_HEIGHT = 15;
-
 /** Default line height in points for Calibri 11pt (Excel default) */
 const DEFAULT_LINE_HEIGHT = 15;
 

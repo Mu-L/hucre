@@ -1,29 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { ZipReader } from "../src/zip/reader";
 import { ZipWriter } from "../src/zip/writer";
-import { parseXml } from "../src/xml/parser";
 import { writeXlsx } from "../src/xlsx/writer";
 import { readXlsx } from "../src/xlsx/reader";
-import type { WriteSheet, SheetImage } from "../src/_types";
+import type { WriteSheet } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-const decoder = new TextDecoder("utf-8");
 const encoder = new TextEncoder();
-
-async function extractXml(data: Uint8Array, path: string): Promise<string> {
-  const zip = new ZipReader(data);
-  const raw = await zip.extract(path);
-  return decoder.decode(raw);
-}
-
-function findChild(el: { children: Array<unknown> }, localName: string): any {
-  return el.children.find((c: any) => typeof c !== "string" && (c.local || c.tag) === localName);
-}
-
-function findChildren(el: { children: Array<unknown> }, localName: string): any[] {
-  return el.children.filter((c: any) => typeof c !== "string" && (c.local || c.tag) === localName);
-}
 
 /** Create a simple fake PNG-like image */
 function fakePng(size = 64): Uint8Array {
@@ -40,21 +24,6 @@ function fakePng(size = 64): Uint8Array {
     data[i] = i % 256;
   }
   return data;
-}
-
-function makeImage(
-  type: SheetImage["type"],
-  from: { row: number; col: number },
-  to?: { row: number; col: number },
-  opts?: { width?: number; height?: number },
-): SheetImage {
-  return {
-    data: fakePng(),
-    type,
-    anchor: { from, to },
-    width: opts?.width,
-    height: opts?.height,
-  };
 }
 
 /**
@@ -241,7 +210,6 @@ describe("oneCellAnchor image reading", () => {
 describe("mixed anchor types", () => {
   it("reads both twoCellAnchor and oneCellAnchor from same drawing", async () => {
     const imageData1 = fakePng(80);
-    const imageData2 = fakePng(90);
 
     // Build an XLSX with a twoCellAnchor image first
     const sheet: WriteSheet = {

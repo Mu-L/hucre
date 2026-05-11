@@ -13,7 +13,7 @@ import { writeXlsx } from "../src/xlsx/writer";
 import { readXlsx } from "../src/xlsx/reader";
 import { openXlsx, saveXlsx } from "../src/xlsx/roundtrip";
 import { readOds } from "../src/ods/reader";
-import type { WriteSheet, CellValue, RowDef } from "../src/_types";
+import type { CellValue, RowDef } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

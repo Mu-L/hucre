@@ -91,12 +91,7 @@ import {
   UnsupportedFormatError,
   EncryptedFileError,
 } from "../src/index";
-import type { Sheet, CellValue, Workbook } from "../src/_types";
-
-/** Helper to create a minimal sheet */
-function makeSheet(rows: CellValue[][], overrides?: Partial<Sheet>): Sheet {
-  return { name: "Sheet1", rows, ...overrides };
-}
+import type { CellValue } from "../src/_types";
 
 describe("Coverage gaps: every exported function is callable (#135)", () => {
   it("all high-level API functions exist and are functions", () => {

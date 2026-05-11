@@ -6,7 +6,7 @@ import { readXlsx } from "../src/xlsx/reader";
 import { writeOds } from "../src/ods/writer";
 import { parseCsv } from "../src/csv/reader";
 import { streamOdsRows } from "../src/ods/stream";
-import type { Sheet, CellValue, WriteSheet } from "../src/_types";
+import type { Sheet, CellValue } from "../src/_types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

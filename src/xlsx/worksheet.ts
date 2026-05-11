@@ -188,7 +188,6 @@ export function parseWorksheet(xml: string, name: string, ctx: WorksheetContext)
   // Row limit tracking (maxRows option)
   const maxRowsLimit = ctx.maxRows ?? 0; // 0 = unlimited
   let dataRowCount = 0;
-  let maxRowsReached = false;
 
   // Row definitions (height, hidden, outlineLevel, collapsed)
   const rowDefs = new Map<number, import("../_types").RowDef>();
@@ -305,7 +304,6 @@ export function parseWorksheet(xml: string, name: string, ctx: WorksheetContext)
           if (inSheetData) {
             // Check maxRows limit
             if (maxRowsLimit > 0 && dataRowCount >= maxRowsLimit) {
-              maxRowsReached = true;
               break;
             }
             inRow = true;
@@ -1056,7 +1054,7 @@ export function parseWorksheet(xml: string, name: string, ctx: WorksheetContext)
     sheet.cells = cells;
   }
   // Attach column definitions (width, hidden, outlineLevel, collapsed)
-  if (columnDefs.length > 0 && columnDefs.some((c) => Object.keys(c).length > 0)) {
+  if (columnDefs.some((c) => Object.keys(c).length > 0)) {
     sheet.columns = columnDefs;
   }
   if (merges.length > 0) {

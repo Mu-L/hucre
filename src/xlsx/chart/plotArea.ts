@@ -28,8 +28,6 @@ import {
   EMU_PER_PT,
   clampStrokeWidthPt,
   normalizeBorderDash,
-  normalizeRgbHex,
-  parseBorderDashFromSpPr,
   parseBorderWidthFromSpPr,
   parseSpPrBorderColor,
   parseSpPrFill,
@@ -41,13 +39,7 @@ import {
   normalizeManualLayout,
   parseManualLayout,
 } from "./layout";
-import {
-  childElements,
-  findChild,
-  parseBoolAttr,
-  parseNumericChildVal,
-  readBoolAttr,
-} from "./util";
+import { childElements, findChild } from "./util";
 import {
   AXIS_ID_CAT,
   AXIS_ID_VAL,
