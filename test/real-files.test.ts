@@ -59,6 +59,14 @@ interface SheetModel {
   columnStyles: Record<string, string>
   /** One line per conditional-formatting rule. */
   conditional: string[]
+  /** The autofilter range in A1 notation, or `null`. */
+  autoFilter: string | null
+  /** One line per data-validation rule. */
+  validations: string[]
+  /** Which protection flags are on, sorted; empty when unprotected. */
+  protection: string[]
+  /** `A1: text` per cell comment, sorted. */
+  comments: string[]
   /**
    * A1 → `<formula text> => <cached result>`, for cells carrying a
    * formula. The cached result is the interesting half: Excel always
@@ -97,6 +105,9 @@ interface WorkbookModel {
    * the licence-and-privacy guarantee of the corpus, checked by the same
    * suite that reads it rather than only by a note in a markdown file.
    */
+  /** `name=range` per defined name, sorted. Excel's built-in print
+   * names are excluded — they are page setup, asserted separately. */
+  namedRanges: string[]
   hasAuthor: boolean
   warnings: string[]
   knownDefects?: KnownDefect[]
@@ -215,6 +226,27 @@ const projectSheet = (sheet: Sheet): SheetModel => {
     hiddenColumns: hiddenColumns.sort(),
     styles,
     columnStyles,
+    autoFilter: sheet.autoFilter?.range ?? null,
+    validations: (sheet.dataValidations ?? [])
+      .map(
+        (v) =>
+          `${v.range} ${v.type}` +
+          `${v.operator ? ` ${v.operator}` : ""}` +
+          `${v.values ? ` [${v.values.join("|")}]` : ""}` +
+          `${v.formula1 ? ` f1=${v.formula1}` : ""}`,
+      )
+      .sort(),
+    protection: Object.entries(sheet.protection ?? {})
+      .filter(([k, v]) => v === true && k !== "password")
+      .map(([k]) => k)
+      .sort(),
+    comments: [...(sheet.cells ?? new Map<string, Cell>())]
+      .filter(([, c]) => c.comment)
+      .map(([key, c]) => {
+        const [r, cc] = key.split(",").map(Number)
+        return `${colName(cc as number)}${(r as number) + 1}: ${c.comment?.text ?? ""}`
+      })
+      .sort(),
     conditional: (sheet.conditionalRules ?? [])
       .map(
         (r) =>
@@ -231,6 +263,10 @@ const projectSheet = (sheet: Sheet): SheetModel => {
 const project = (wb: Workbook, warnings: string[]): WorkbookModel => ({
   sheets: wb.sheets.map(projectSheet),
   dateSystem: wb.dateSystem ?? null,
+  namedRanges: (wb.namedRanges ?? [])
+    .filter((n) => !n.name.startsWith("_xlnm."))
+    .map((n) => `${n.name}=${n.range}${n.scope ? ` @${n.scope}` : ""}`)
+    .sort(),
   hasAuthor: Boolean(wb.properties?.creator || wb.properties?.lastModifiedBy),
   warnings,
 })
@@ -284,6 +320,7 @@ const FIXTURES: Array<{ file: string; reader: typeof readXlsx }> = [
   { file: "excel-styleonly.xlsx", reader: readXlsx },
   { file: "excel-dates.xls", reader: readXls },
   { file: "excel-empty.xlsx", reader: readXlsx },
+  { file: "excel-features.xlsx", reader: readXlsx },
   // A second producer. openpyxl is not Excel-with-a-different-icon: it
   // emits formulas with no cached result, ISO-8601 `t="d"` date cells,
   // `date1904`, and inline strings with no shared string table — four
@@ -426,29 +463,46 @@ describe("workbooks written by Excel, not by this test suite", () => {
 
   // Sparse, not large. `Sheet.rows` is a dense rectangle, so the cost of
   // a read is the bounding box and not the cell count — about thirty
-  // values placed out to column 15,312 describe 30.6 million slots and
-  // the workbook is refused. The real file behind this had 76,277 values
-  // over 507 columns, a 305,612,208-slot box at 0.03% fill, and Excel
-  // opens it without complaint.
+  // values placed out to column 15,312 describe 30.6 million slots. The
+  // real file behind this had 76,277 values over 507 columns, a
+  // 305,612,208-slot box at 0.03% fill, and Excel opens it without
+  // complaint.
+  //
+  // The default read still refuses it, and should: the grid genuinely
+  // cannot be built. What #501 changed is that there is now a way out,
+  // and that the error names it.
   describe("excel-sparse.xlsx", () => {
-    it.fails("#501 — a sparse sheet can be read without raising any bound", async () => {
-      const wb = await readXlsx(bytes("excel-sparse.xlsx"))
+    it("#501 — reads with `sparse: true`, which builds no grid", async () => {
+      const wb = await readXlsx(bytes("excel-sparse.xlsx"), { sparse: true })
+
       expect(wb.sheets[0]?.name).toBe("Sparse")
+      expect(wb.sheets[0]?.rows).toEqual([])
+      expect(wb.sheets[0]?.cells?.size ?? 0).toBeGreaterThan(0)
     })
 
-    it("fails the way #501 describes, and not some other way", async () => {
+    it("and streams, which is the other answer", async () => {
+      let count = 0
+      for await (const _row of streamXlsxRows(bytes("excel-sparse.xlsx"))) count++
+
+      expect(count).toBeGreaterThan(0)
+    })
+
+    it("the default read still refuses it, and says how empty the box is", async () => {
       await expect(readXlsx(bytes("excel-sparse.xlsx"))).rejects.toThrow(
         /spans 2000 rows x 15312 columns .* over the \d+ limit/,
       )
+      await expect(readXlsx(bytes("excel-sparse.xlsx"))).rejects.toThrow(/% of them filled/)
     })
 
-    // The escape hatch the error message offers should at least work.
-    // It does — which is what makes the message misleading rather than
-    // wrong: `range` is usable only if you already know where the data
-    // is, and on the real file the used columns were scattered across
-    // 507 of 15,312.
-    it("can be read when the caller already knows where the data is", async () => {
+    it("the error names both ways out", async () => {
+      // It used to name three options and none of them worked here.
+      await expect(readXlsx(bytes("excel-sparse.xlsx"))).rejects.toThrow(/streamXlsxRows/)
+      await expect(readXlsx(bytes("excel-sparse.xlsx"))).rejects.toThrow(/sparse: true/)
+    })
+
+    it("can still be read when the caller already knows where the data is", async () => {
       const wb = await readXlsx(bytes("excel-sparse.xlsx"), { range: "A1:C1" })
+
       expect(wb.sheets[0]?.rows[0]?.[0]).toBe("left edge")
     })
   })
